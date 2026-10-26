@@ -5,6 +5,10 @@ c64/flash/roms/
 # Backups taken from a board
 c64/backup/
 
+# Firmware images: generated from the companion fork, or the maintainers' own
+# Partner binary. Built, not kept - see c64/README.md.
+c64/flash/companion/*.bin
+
 # Anything the card only needs for trying things out
 c64/sdcard/*.bin
 c64/sdcard/*.crt

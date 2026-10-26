@@ -78,7 +78,34 @@ file another machine has to adjust.
 keep holding for two seconds, release. Without that the FPGA stops answering
 as soon as a core is running that uses the JTAG pins as regular IO.
 
-## 4. Fill the SD card
+## 4. Build and flash the companion
+
+Only needed on a board that has no companion yet, or to pick up a change in
+the firmware. From `src/bl616` of the companion fork, with the Bouffalo SDK
+and its toolchain on the path:
+
+    make TANG_BOARD=nano20k          # board revision 3921
+    make TANG_BOARD=nano20k_v3923    # board revision 3923
+
+The result is `build/build_out/fpga_companion_bl616.bin`. Put it in
+[`flash/companion/`](flash/companion) as `fpga_companion_nano20k.bin`, next to
+`bl616_fpga_partner_nano20k.bin` from the maintainers' releases and the
+`flash_nano20k.ini` that names both. The binaries are not kept in this
+repository — they are built, and the Partner is not ours.
+
+Then, with the board in **update mode** (unplug, hold `UPDATE`, plug into the
+PC, release):
+
+    flash\flash_companion.cmd COM12
+
+Called without a port it lists the ports that are there. The bootloader port is
+**not** one of the board's two FTDI ports and not the console adapter either;
+it appears only in update mode.
+
+**Only the companion image is board specific.** The Partner is the same file
+for both revisions, and so is the FPGA core.
+
+## 5. Fill the SD card
 
     tools\fill_sdcard.cmd E:
 
