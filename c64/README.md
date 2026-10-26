@@ -208,15 +208,29 @@ manage 2 Mbaud; a CP2102 does not.
 Mind the header: **5V is the top pin, GND the one right below it.** Putting the
 adapter's GND on 5V shorts two of the PC's USB ports through the board.
 
-This is the difference between knowing and guessing. The red LED covers two
-separate failures, and the console names them:
+This is the difference between knowing and guessing. The LED has three states
+and the firmware has a dozen ways to reach them; the console names which one.
+Every line below is taken from the sources, with the file it comes from.
 
-| Console line | Meaning |
-|---|---|
-| `SD not ready, status = <n>` | the card never reported ready — wrong card, no card, or inserted after power-up |
-| `mount fail,res:<n>` | the card was seen but the filesystem could not be mounted — `res` is the FatFs error number |
-| `SDC status: <xx>` with `card type:` | the card was accepted; the mount is the next thing to look at |
-| `FPGA ready after <n>ms` | core and companion are talking |
+| Console line | From | Meaning |
+|---|---|---|
+| `FPGA ready after <n>ms!` | `sysctrl.c` | core and companion are talking. LED goes blue |
+| `FPGA not ready after 5 seconds!` | `sysctrl.c` | `sys_wait4fpga()` timed out. LED goes red, and `main.c` skips its **entire** init block: no card, no config, no OSD |
+| `FPGA detected!` | `main.c` | the dead-end loop after that failure has found the FPGA and will **reset the MCU** two seconds later |
+| `FPGA cold boot detected, reseting MCU ...` | `sysctrl.c` | the core reported a cold boot, so the companion restarts to pick up a possibly different core |
+| `FPGA cold boot detected, ignoring for now` | `sysctrl.c` | the same flag at start-up, deliberately ignored. The flag is a one-shot: reading the interrupt source clears it |
+| `Delayed MCU reset, jtag still in progress` | `sysctrl.c` | a reset is pending but JTAG is busy |
+| `Buttons: <xx>` | `sysctrl.c` | the core reported a button change. **Button 1 held for two seconds resets the MCU** — phantom presses show up here |
+| `Core ID: <xx>` / `Unexpected status reply` | `sysctrl.c` | which core answered on the SPI link |
+| `Loading XML config from core` / `from file` | `main.c` | where the menu came from — "from file" means a `config.xml` on the card is overriding the core |
+| `SD not ready, status = <n>` | `sdc.c` | the card never reported ready. LED red |
+| `mount fail,res:<n>` | `sdc.c` | card seen, filesystem not mountable; `res` is the FatFs error number. LED red |
+| `SDC status: <xx>`, `card type:` | `sdc.c` | the card was accepted, the mount is next |
+
+**Reading it in order is what matters.** A red LED after a green one is not a
+card fault; it means the companion went through its start-up a second time.
+The line immediately before the second `FPGA ready` or `FPGA not ready` names
+the reason it restarted.
 
 ## The flash map, both platforms together
 
