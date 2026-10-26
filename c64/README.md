@@ -161,29 +161,41 @@ file cannot be read.
 | openFPGALoader exits with no message at all | `lib` is missing from PATH, exit code `0xC0000135`. `paths.cmd` handles this |
 | **LED goes blue, then green, then red**, and the machine restarts itself after about ten seconds | a **cold boot loop**, see below. Green means the card mounted fine, so the card is not the problem |
 
-### The cold boot loop
+### The cold boot restart
 
 If the LED reaches **green** the card is mounted — green is set only after a
 successful `f_mount`. Red appearing afterwards can only come from one place in
 the whole firmware: `sysctrl.c` setting red when `sys_wait4fpga()` times out.
 That function runs only at companion start-up, so **the companion must have
-restarted**.
+restarted** in between.
 
-And it does, by design: `sys_handle_event()` in `sysctrl.c` reacts to the
+And it does, by design. `sys_handle_event()` in `sysctrl.c` reacts to the
 core's cold boot flag with
 
     FPGA cold boot detected, reseting MCU ...
 
-followed by `mcu_hw_reset()`. The reasoning upstream is sound — a core that
-cold boots may be a different core, so the companion starts over. But if the
-core cold boots on *every* power-up, the two chase each other: the companion
-restarts, waits `FPGA_BOOT_TIMEOUT` (5 s) for the FPGA, and the picture blinks
-as the machine is reset.
+followed by `mcu_hw_reset()`. The reasoning is sound: a core that cold boots
+may be a *different* core, so the companion starts over to pick up the new
+core's configuration. This is stock upstream behaviour, present since the
+first commit of the firmware.
 
-The usual trigger is **a kernal on the card**: the core's own power-up loader
-reads `c64kernal.bin`, applies it and cold boots. So the first thing to try is
-to **remove `c64kernal.bin` from the card** — the core has a Dolphin kernal
-built in and does not need it.
+Two things have to come together for it to leave you stranded:
+
+1. **A cold boot has to arrive while the companion is already running.** The
+   one at power-on is deliberately ignored — `main.c` passes
+   `ignore_coldboot = true` for the interrupt that is already pending at
+   start-up. On the C64 a later cold boot comes from the core's own power-up
+   loader: if it finds something on the card to load, such as
+   `c64kernal.bin`, it applies it and cold boots the machine.
+2. **The restart has to fail.** Normally the companion comes back, finds the
+   FPGA, and you see nothing but a brief blink. Red means the second
+   `sys_wait4fpga()` ran out of its `FPGA_BOOT_TIMEOUT` of five seconds — and
+   when it does, `main.c` skips its entire init block: no card, no
+   configuration, no OSD, and no retry.
+
+So the first thing to try is to **remove `c64kernal.bin` from the card**. The
+core carries a Dolphin kernal internally and does not need the file; it only
+gives the loader a reason to cold boot.
 
 ## The console tells you what the LED cannot
 
