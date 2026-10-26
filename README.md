@@ -34,6 +34,7 @@ prior knowledge can work through.
 
 | | |
 |---|---|
+| [`COMPANION-CORE-CONTRACT.md`](COMPANION-CORE-CONTRACT.md) | **read this before porting to another machine**: what our companion needs from a core that an upstream core does not provide, and what breaks when it is missing |
 | [`c64/`](c64) | C64 on the Tang Nano 20K: build, flash, SD card, reading the LEDs, troubleshooting |
 | [`atarist/`](atarist) | Atari ST on the Tang Nano 20K |
 
