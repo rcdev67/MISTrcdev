@@ -30,9 +30,24 @@ if not exist "%TARGET%\" (
 set SDCARD=%~dp0..\sdcard
 set ROMS=%~dp0..\flash\roms
 
+rem CORE_REPO, for the drive sound set that lives with the core
+call "%~dp0..\flash\paths.cmd"
+
 echo === Required: the empty image as the boot disk ===
 copy /y "%SDCARD%\disk8.d64" "%TARGET%\disk8.d64"
 if errorlevel 1 ( echo FAILED & goto :done )
+
+echo.
+echo === Required for drive sound: snds1541.bin ===
+rem The set is not ours. It is the 1541 Ultimate's, GPL-3.0, and it lives in the
+rem core repository next to the licence note that says so - see sounds\README.md
+rem there. The core reads it from the card into the SDRAM; without it the drive
+rem is silent, and nothing else breaks.
+if exist "%CORE_REPO%\sounds\snds1541.bin" (
+  copy /y "%CORE_REPO%\sounds\snds1541.bin" "%TARGET%\snds1541.bin"
+) else (
+  echo skipped - %CORE_REPO%\sounds\snds1541.bin is not there
+)
 
 echo.
 echo === Optional, only on request: the Dolphin kernal as c64kernal.bin ===

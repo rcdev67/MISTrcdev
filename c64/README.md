@@ -109,10 +109,11 @@ for both revisions, and so is the FPGA core.
 
     tools\fill_sdcard.cmd E:
 
-Only **`disk8.d64`** is required — it is the single default in the core's
-`c64.xml`. The kernal, CRT, PRG, TAP and FLT files are optional: their file
-selectors carry no `default`, and the core starts with its **built-in**
-Dolphin kernal.
+Two files carry a `default` in the core's `c64.xml` and are therefore the ones
+worth having on the card: **`disk8.d64`** as the boot disk and
+**`snds1541.bin`** for the drive sound. The kernal, CRT, PRG, TAP, FLT and REU
+files are optional — their file selectors carry no `default`, and the core
+starts with its **built-in** Dolphin kernal.
 
 **Leave `c64kernal.bin` off the card unless you need it.** The core has its own
 power-up loader that reads a kernal from the card and then cold boots the
@@ -161,6 +162,42 @@ Keep the card modest: the status byte the core reports distinguishes only
 configuration this is tested with. exFAT is compiled in (`FF_FS_EXFAT 1`), but
 FAT32 removes one variable. The sector size must be 512 bytes
 (`FF_MIN_SS` = `FF_MAX_SS` = 512).
+
+## Drive sound
+
+A 1541 clatters, and this is what makes ours do it. `snds1541.bin` on the card
+is the whole requirement; without the file the drive is simply silent and
+nothing else changes.
+
+**The set is not ours.** It is the drive sound data from the **1541 Ultimate**
+firmware by **Gideon Zweijtzer**, recorded from a real 1541 and licensed
+GPL-3.0 — the same licence as this core, which is why it can be used here. It
+lives in the core repository under `sounds/`, beside a note recording where it
+came from, and `tools\fill_sdcard.cmd` copies it from there onto the card.
+
+Seven sounds, 8 bit signed PCM at 22050 Hz: the motor hum, the disk slipping in
+its sleeve, a step inwards, a step outwards, the head against the end stop, and
+the disk being put in and taken out. Two of them are worth knowing about:
+
+- **The drive sounds different with and without a disk**, because the disk rubs
+  against the liner of its sleeve. An empty drive hums; a loaded one slips.
+- **The head against the end stop is the loudest sound in the set** by a wide
+  margin, and the player gives the head channel another factor of 16 on top of
+  that. That is not a mistake. The clatter of a seek to track 1 is what a 1541
+  sounds like from the next room, and the hum is only the background to it.
+
+**Where the samples live is the interesting part.** Not in block RAM. The core
+already uses 42 of the 46 block RAMs of a Tang Nano 20k, and the four that are
+left hold half a second of audio — the Atari ST core keeps its drive sounds in
+14 of them, and that approach simply does not port. They live in the **SDRAM**
+instead, loaded there from the card like any other image, and are read one byte
+at a time through the **DMA time slot the C64 bus logic already produces**, the
+one the REU would otherwise use. About a million of those slots go by every
+second and the player asks for 44100 of them, so it costs the machine nothing;
+when the REU wants a slot, it keeps it and the player waits for the next.
+
+**Volume** is under *Settings* in the OSD as **Drive sound**, four steps from
+Off. Off is really off: the player stops reading the SDRAM altogether.
 
 ## Reading the LEDs
 
