@@ -130,6 +130,16 @@ need to type `N0:` on the C64. To regenerate it:
 `/sd/config.xml` from `sys_get_config_name()` and would hand that menu to
 *any* core, including the wrong one.
 
+**`System Volume Information` does no harm.** Windows puts that directory on
+every removable volume it writes to, and there is no practical way to stop it
+coming back. It never shows up in the OSD: the companion's directory listing
+skips every entry with the hidden or system attribute
+(`if(fno.fname[0] != 0 && !(fno.fattrib & (AM_HID|AM_SYS)))` in `sdc.c`), and
+Windows creates that directory with both. The core's own power-up loader looks
+for fixed file names and ignores directories as well. Leave it alone — only if
+somebody clears those attributes by hand does it appear as a folder you can
+step into, and even then it is merely untidy.
+
 **The card has to be in before you power up.** `main.c` calls `sdc_init()`
 exactly once at companion start-up, and it waits two seconds for the card to
 report ready. There is no re-detection: a card pushed in later is never
