@@ -87,6 +87,12 @@ Only **`disk8.d64`** is required — it is the single default in the core's
 selectors carry no `default`, and the core starts with its **built-in**
 Dolphin kernal.
 
+**Leave `c64kernal.bin` off the card unless you need it.** The core has its own
+power-up loader that reads a kernal from the card and then cold boots the
+machine — and a cold boot makes the companion reset itself, see the
+troubleshooting section. The script therefore copies the kernal only when you
+pass `kernal` as a second argument.
+
 `disk8.d64` in [`sdcard/`](sdcard) is an empty image we generate ourselves,
 **already formatted** (35 tracks, 683 sectors, 174848 bytes). `LOAD"$",8`
 shows `0 "DISK8" 01 2A` and `664 BLOCKS FREE` straight away, so there is no
@@ -153,6 +159,31 @@ file cannot be read.
 | `unable to open ftdi device: -4` | the board is on the FTDI driver, see step 3 |
 | `Error: Gowin Device not found` after a run that succeeded | the core restarted and took the JTAG pins. Replug holding S2 |
 | openFPGALoader exits with no message at all | `lib` is missing from PATH, exit code `0xC0000135`. `paths.cmd` handles this |
+| **LED goes blue, then green, then red**, and the machine restarts itself after about ten seconds | a **cold boot loop**, see below. Green means the card mounted fine, so the card is not the problem |
+
+### The cold boot loop
+
+If the LED reaches **green** the card is mounted — green is set only after a
+successful `f_mount`. Red appearing afterwards can only come from one place in
+the whole firmware: `sysctrl.c` setting red when `sys_wait4fpga()` times out.
+That function runs only at companion start-up, so **the companion must have
+restarted**.
+
+And it does, by design: `sys_handle_event()` in `sysctrl.c` reacts to the
+core's cold boot flag with
+
+    FPGA cold boot detected, reseting MCU ...
+
+followed by `mcu_hw_reset()`. The reasoning upstream is sound — a core that
+cold boots may be a different core, so the companion starts over. But if the
+core cold boots on *every* power-up, the two chase each other: the companion
+restarts, waits `FPGA_BOOT_TIMEOUT` (5 s) for the FPGA, and the picture blinks
+as the machine is reset.
+
+The usual trigger is **a kernal on the card**: the core's own power-up loader
+reads `c64kernal.bin`, applies it and cold boots. So the first thing to try is
+to **remove `c64kernal.bin` from the card** — the core has a Dolphin kernal
+built in and does not need it.
 
 ## The console tells you what the LED cannot
 
