@@ -178,7 +178,8 @@ file cannot be read.
 
 | What you see | Cause |
 |---|---|
-| RGB LED red, `LOAD"$",8` fails, `Floppy:` empty in the OSD | **no readable SD card.** All three have the same single cause. In this order: power cycle with the card already in, try a card that is known to work in the other core, reformat as FAT32, then read the console |
+| RGB LED red, `LOAD"$",8` fails, `Floppy:` empty in the OSD | **no readable SD card.** All three have the same single cause. In this order: power cycle with the card already in, try a different small FAT32 card, then read the console |
+| the machine keeps restarting itself every minute or two | **also the card.** See below — boot once with no card at all to confirm it |
 | picking `C64 KERNAL:` hangs, LED 2 on | same cause: the upload cannot find the file |
 | 1541 LED solid red | the DOS image in flash is missing |
 | F12 does nothing, console silent | wrong companion image for the board revision (3921 vs 3923) |
@@ -202,6 +203,29 @@ which on the C64 cold boots the machine, which makes the companion reset
 itself, which starts over. The cores name themselves — `<config
 name="MiSTeryNano">` against `<config name="C64Nano">` — so core-specific
 features have to check that name before touching anything.
+
+### Boot with no card at all — the one test that sorts it out
+
+A card that is **detected but cannot be read** is worse than no card. The
+status byte reports it (`card type: SDHCv2`), `f_mount` fails with
+`FR_DISK_ERR`, and from then on every file system access retries every two to
+three seconds, for ever. In that state the companion eventually dies — with no
+error message, right after start-up finishes and the menu task reaches for the
+card as well. Boot after boot.
+
+So when anything looks wrong, **take the card out and power up once**. With no
+card the firmware takes its intended path: one `SD not ready, status = …`, a
+red LED, and then it carries on and stays up.
+
+| | unreadable card | no card |
+|---|---|---|
+| `read timeout on sector` | over and over | three times, then done |
+| `mount fail` | every boot | never reached |
+| the companion | restarts every minute or two | **stays up** |
+
+If it is stable without a card and unstable with one, you are not hunting a
+firmware bug — you are hunting a card or a card slot. Try a different small
+FAT32 card next; there is no need to dismantle another machine to borrow one.
 
 ### The cold boot restart
 
