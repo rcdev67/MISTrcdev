@@ -161,6 +161,21 @@ file cannot be read.
 | openFPGALoader exits with no message at all | `lib` is missing from PATH, exit code `0xC0000135`. `paths.cmd` handles this |
 | **LED goes blue, then green, then red**, and the machine restarts itself after about ten seconds | a **cold boot loop**, see below. Green means the card mounted fine, so the card is not the problem |
 
+### Variable ids belong to the core, not to the companion
+
+A menu variable id in a core's XML is **that core's own name for it**, not a
+shared protocol. `E` is `Serial:` in the Atari ST core and `Video Std:` in the
+C64 core — and the C64 attaches `action="cold_reset"` to it. Any companion code
+that writes an id without knowing which core it is talking to will eventually
+reset the wrong machine.
+
+Our own network feature did exactly that and sent the C64 into an endless
+restart: `net.c` writes `E = 2` to route the core's serial port to the modem,
+which on the C64 cold boots the machine, which makes the companion reset
+itself, which starts over. The cores name themselves — `<config
+name="MiSTeryNano">` against `<config name="C64Nano">` — so core-specific
+features have to check that name before touching anything.
+
 ### The cold boot restart
 
 If the LED reaches **green** the card is mounted — green is set only after a
