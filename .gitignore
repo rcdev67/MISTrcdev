@@ -1,0 +1,17 @@
+# ROM images are not ours to publish.
+# What belongs here and where it comes from is in c64/README.md.
+c64/flash/roms/
+
+# Backups taken from a board
+c64/backup/
+
+# Anything the card only needs for trying things out
+c64/sdcard/*.bin
+c64/sdcard/*.crt
+c64/sdcard/*.prg
+c64/sdcard/*.tap
+c64/sdcard/*.flt
+c64/sdcard/*.ini
+
+# disk8.d64 is our own generated empty image and stays in
+!c64/sdcard/disk8.d64
