@@ -58,6 +58,12 @@ sector read times out after `SDC_READY_TIMEOUT_MS`, `mount fail,res:1`, red
 LED, and each failed file access adds three timeouts to the boot — which is
 why the OSD took twenty seconds to appear.
 
+**Confirmed on hardware, 26 October 2026.** With those two edits in the C64
+core's `sd_card.v`, on the same board and the same card that had failed all
+evening: **green LED, F12 opens the OSD immediately, no twenty second delay
+and no reset flicker.** Everything on that symptom list went away at once,
+which is the proof that they all had this single cause.
+
 ## 2. `sysctrl.v`: the companion's own port as a level interrupt
 
 **Required by:** the network download.
