@@ -61,7 +61,7 @@ from version control.
 | | |
 |---|---|
 | **Atari ST** | running since September 2026 — our own core build, networking through a real modem, drive sounds |
-| **C64** | core running since 26 October 2026: picture, boot message, USB hub with keyboard, OSD on F12. Drive and SD card still in progress |
+| **C64** | **running since 26 October 2026**: picture, USB hub with keyboard, OSD on F12 without delay, SD card mounted, and the 1541 reading a disk image. Getting there needed one change to the core — see [`COMPANION-CORE-CONTRACT.md`](COMPANION-CORE-CONTRACT.md). Still to come: drive sounds, networking |
 
 Switching platforms is **one** flash write at `0x000000` — the ROMs for both
 machines fit in the flash at the same time. Switching at runtime is

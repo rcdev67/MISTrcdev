@@ -120,6 +120,16 @@ machine — and a cold boot makes the companion reset itself, see the
 troubleshooting section. The script therefore copies the kernal only when you
 pass `kernal` as a second argument.
 
+Once a disk is mounted under **Storage** in the OSD, read its directory the
+way the machine has always wanted it:
+
+    LOAD"$",8
+    LIST
+
+`LOAD` puts the directory in BASIC memory, `LIST` prints it. On our empty
+image that gives `0 "DISK8" 01 2A` and `664 BLOCKS FREE.` — and `SAVE"TEST",8`
+followed by the same two lines proves the write path as well.
+
 `disk8.d64` in [`sdcard/`](sdcard) is an empty image we generate ourselves,
 **already formatted** (35 tracks, 683 sectors, 174848 bytes). `LOAD"$",8`
 shows `0 "DISK8" 01 2A` and `664 BLOCKS FREE` straight away, so there is no
