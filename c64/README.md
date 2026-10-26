@@ -97,6 +97,18 @@ need to type `N0:` on the C64. To regenerate it:
 `/sd/config.xml` from `sys_get_config_name()` and would hand that menu to
 *any* core, including the wrong one.
 
+**The card has to be in before you power up.** `main.c` calls `sdc_init()`
+exactly once at companion start-up, and it waits two seconds for the card to
+report ready. There is no re-detection: a card pushed in later is never
+noticed, and the RGB LED stays red for the rest of the session. Always power
+cycle after changing cards.
+
+Keep the card modest: the status byte the core reports distinguishes only
+`SDv1`, `SDv2` and `SDHCv2`. A card of 8 to 32 GB formatted **FAT32** is the
+configuration this is tested with. exFAT is compiled in (`FF_FS_EXFAT 1`), but
+FAT32 removes one variable. The sector size must be 512 bytes
+(`FF_MIN_SS` = `FF_MAX_SS` = 512).
+
 ## Reading the LEDs
 
 Without this table you are guessing. Both halves come from the sources, not
@@ -133,7 +145,7 @@ file cannot be read.
 
 | What you see | Cause |
 |---|---|
-| RGB LED red, `LOAD"$",8` fails, `Floppy:` empty in the OSD | **no readable SD card.** All three have the same single cause |
+| RGB LED red, `LOAD"$",8` fails, `Floppy:` empty in the OSD | **no readable SD card.** All three have the same single cause. In this order: power cycle with the card already in, try a card that is known to work in the other core, reformat as FAT32, then read the console |
 | picking `C64 KERNAL:` hangs, LED 2 on | same cause: the upload cannot find the file |
 | 1541 LED solid red | the DOS image in flash is missing |
 | F12 does nothing, console silent | wrong companion image for the board revision (3921 vs 3923) |
@@ -141,6 +153,27 @@ file cannot be read.
 | `unable to open ftdi device: -4` | the board is on the FTDI driver, see step 3 |
 | `Error: Gowin Device not found` after a run that succeeded | the core restarted and took the JTAG pins. Replug holding S2 |
 | openFPGALoader exits with no message at all | `lib` is missing from PATH, exit code `0xC0000135`. `paths.cmd` handles this |
+
+## The console tells you what the LED cannot
+
+The core hands the BL616's debug console to **pin 48** of the right hand header
+(`bl616_mon_tx <= uart_rx;` in `c64nano.vhd`, the same as in the Atari ST
+core). A USB serial adapter with RX on pin 48 and GND on GND, at **2,000,000
+baud 8N1**, shows what the companion is doing. FTDI, CH340 and CH343 adapters
+manage 2 Mbaud; a CP2102 does not.
+
+Mind the header: **5V is the top pin, GND the one right below it.** Putting the
+adapter's GND on 5V shorts two of the PC's USB ports through the board.
+
+This is the difference between knowing and guessing. The red LED covers two
+separate failures, and the console names them:
+
+| Console line | Meaning |
+|---|---|
+| `SD not ready, status = <n>` | the card never reported ready — wrong card, no card, or inserted after power-up |
+| `mount fail,res:<n>` | the card was seen but the filesystem could not be mounted — `res` is the FatFs error number |
+| `SDC status: <xx>` with `card type:` | the card was accepted; the mount is the next thing to look at |
+| `FPGA ready after <n>ms` | core and companion are talking |
 
 ## The flash map, both platforms together
 
