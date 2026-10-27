@@ -34,17 +34,26 @@ if "%PORT%"=="" (
   goto :done
 )
 
-set FLASHER=%GOWIN%\..\..\bl616\bouffalo_sdk\tools\bflb_tools\bouffalo_flash_cube\BLFlashCommand.exe
-if not exist "%FLASHER%" set FLASHER=D:\fpga\bl616\bouffalo_sdk\tools\bflb_tools\bouffalo_flash_cube\BLFlashCommand.exe
+set FLASHER=%BL616_SDK%\tools\bflb_tools\bouffalo_flash_cube\BLFlashCommand.exe
 if not exist "%FLASHER%" (
-  echo MISSING: BLFlashCommand.exe  -  adjust the path in this script
+  echo MISSING: %FLASHER%  -  set BL616_SDK in paths.cmd
   goto :done
 )
-if not exist "%CDIR%\fpga_companion_nano20k.bin" (
-  echo MISSING: %CDIR%\fpga_companion_nano20k.bin
+
+rem The companion comes straight from the fork's build output, never from a
+rem copy lying around in this folder. A stale copy here once flashed a firmware
+rem without the change that had just been built -- the same size to the byte,
+rem so nothing looked wrong until the feature did not work.
+set BUILT=%COMPANION_REPO%\src\bl616\build\build_out\fpga_companion_bl616.bin
+if not exist "%BUILT%" (
+  echo MISSING: %BUILT%
   echo Build it in the companion fork: src\bl616, make TANG_BOARD=nano20k
   goto :done
 )
+copy /y "%BUILT%" "%CDIR%\fpga_companion_nano20k.bin" >nul
+for %%F in ("%BUILT%") do echo Companion: %%~fF
+for %%F in ("%BUILT%") do echo Built:     %%~tF  - for whichever TANG_BOARD the last make used; the 3921 needs nano20k
+echo.
 if not exist "%CDIR%\bl616_fpga_partner_nano20k.bin" (
   echo MISSING: %CDIR%\bl616_fpga_partner_nano20k.bin
   echo That one comes from the maintainers' FPGA-Companion releases.

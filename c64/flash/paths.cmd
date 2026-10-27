@@ -10,6 +10,8 @@ rem --- adjust these ----------------------------------------------------------
 set GOWIN=D:\fpga\Gowin\Gowin_V1.9.11.03_Education_x64
 set OSS=D:\fpga\oss-cad-suite
 set CORE_REPO=D:\Development\Projekte\C64Nano
+set COMPANION_REPO=D:\Development\Projekte\FPGA-Companion
+set BL616_SDK=D:\fpga\bl616\bouffalo_sdk
 rem ---------------------------------------------------------------------------
 
 rem Gowin's embedded Python fails when PYTHONIOENCODING is set ("can't
