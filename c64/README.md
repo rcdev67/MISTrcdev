@@ -216,6 +216,35 @@ is already parked on track 18 after a mount, and the directory is on track 18.
 The head against the end stop is the loudest thing in the set and wants
 software that seeks to track 1.
 
+## A German keyboard
+
+Out of the box the keys lie. The cores map USB usage codes by **position** and
+label those positions the way a US keyboard is printed, so the key printed Y
+gives Z, the key printed + gives *, and the key printed - gives /.
+
+The correction lives in the companion, not in a core -- it costs the FPGA
+nothing, and the C64 core has seven of its 10368 logic slices left after the
+drive sound, so a second table in there would not fit. It is off by default and
+set **per core**, in the ini the core loads at start-up:
+
+    option keymap=1
+
+in `c64.ini` on the card (`0` = US, `1` = German). The simplest way to get a
+file with the right shape is to press *Save settings* in the OSD once after
+flashing the new companion: the companion writes every option it knows into
+`c64.ini`, each with a comment, and `option keymap=0` will be among them. Change
+the 0 to a 1 and power cycle.
+
+Per core means a C64 can be German while the Atari ST stays US, which is the
+right default: a German TOS does its own mapping and would be corrected twice.
+
+What this fixes is **Y and Z**, the **+** key and the **-** key, plus the
+keypad's own `/`. What it cannot fix is the umlauts and `#` -- a C64 has no such
+keys. Those stay where the US mapping puts them, which leaves `@` next to P and
+`:` `;` next to L, exactly where a C64 has them. `*` moves to the acute key and
+`/` with `?` to the sharp-s key, whose shift is `?` on a German keyboard as
+well.
+
 ## Reading the LEDs
 
 Without this table you are guessing. Both halves come from the sources, not
