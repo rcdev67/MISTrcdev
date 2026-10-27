@@ -281,8 +281,16 @@ Future](https://github.com/mist64/ccgmsterm) (`ccgms.prg` from release v0.2,
 BSD-3-Clause -- not the EasyFlash build, which has no SwiftLink). Load it under
 *Storage -> PRG BASIC:* and `RUN`. **It starts on the user port at 2400 baud**,
 its build default, and then the modem never hears anything: press **F7**, set
-the modem to **SwiftLink $DE00** and **B** to **19200**. Choosing *Zimodem* as
-the firmware there makes its phone book dial with `atd`.
+the modem to **Swift / Turbo DE** -- the address has to match *SwiftLnk DE* in
+the OSD -- and **B** to **19200**. Choosing *Zimodem* as the firmware there
+makes its phone book dial with `atd`.
+
+**Then press S in that menu**, *save Phone Book and Config*, and keep the name
+`ccgms-phone`. Leaving the menu does not save anything. CCGMS loads that file
+from drive 8 by itself at every start; without it, it is back on the user port
+after the next reset, and since a terminal shows only what the modem echoes,
+the keyboard then seems to do nothing at all -- while the function key menus,
+which are local, still work.
 
 Then, with **F8 set to ASCII** for the setup -- in PETSCII upper and lower case
 come across swapped, and the modem takes what is inside the quotes exactly as
