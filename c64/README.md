@@ -196,8 +196,25 @@ one the REU would otherwise use. About a million of those slots go by every
 second and the player asks for 44100 of them, so it costs the machine nothing;
 when the REU wants a slot, it keeps it and the player waits for the next.
 
+**The set has to be mounted once, by hand.** Under *Storage* in the OSD, pick
+`snds1541.bin` in the **Drive sound** selector, then *Settings -> Save
+settings* so it comes back at the next power-up. The `default="snds1541.bin"`
+in the core's `c64.xml` does **not** do this: a file selector's default only
+tells the companion which directory to open, `/sd` or `/usb`. Nothing in the
+companion mounts an image on its own -- which is why the boot disk has to be
+picked by hand too. Until the set is mounted the drive is silent, and that is
+the normal state after a fresh flash rather than a fault.
+
 **Volume** is under *Settings* in the OSD as **Drive sound**, four steps from
 Off. Off is really off: the player stops reading the SDRAM altogether.
+
+**What to listen for.** Mounting a disk gives a short mechanical sound. While
+the drive runs there is a hum underneath, quiet by design. `SAVE"X",8` makes the
+head step audibly, because it writes a file and then the BAM on track 18.
+`LOAD"$",8` on its own makes no step sound at all and that is correct: the head
+is already parked on track 18 after a mount, and the directory is on track 18.
+The head against the end stop is the loudest thing in the set and wants
+software that seeks to track 1.
 
 ## Reading the LEDs
 
