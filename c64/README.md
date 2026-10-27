@@ -278,12 +278,25 @@ the pins instead. The UART follows the rate the terminal program sets in the
 
 **A terminal program** that speaks SwiftLink: [CCGMS
 Future](https://github.com/mist64/ccgmsterm) (`ccgms.prg` from release v0.2,
-BSD-3-Clause -- not the EasyFlash build, which has no SwiftLink). Load it under
-*Storage -> PRG BASIC:* and `RUN`. **It starts on the user port at 2400 baud**,
-its build default, and then the modem never hears anything: press **F7**, set
-the modem to **Swift / Turbo DE** -- the address has to match *SwiftLnk DE* in
-the OSD -- and **B** to **19200**. Choosing *Zimodem* as the firmware there
-makes its phone book dial with `atd`.
+BSD-3-Clause -- not the EasyFlash build, which has no SwiftLink).
+
+**Load it from the disk, not through *Storage -> PRG BASIC:*.** Started that
+way, it ran, but could neither save its settings nor read a directory -- `$`
+printed garbage, and the disk image showed afterwards that not one block had
+been written. Loaded from the disk, as on the real machine, both work. Why the
+direct start breaks it is not known yet. Put it onto the image on the PC:
+
+    python c64\tools\d64_addprg.py F:\disk8.d64 ccgms.prg CCGMS
+
+and then, on the C64, `LOAD"CCGMS",8` and `RUN`. At 1541 speed that takes
+about 30 seconds: a steady whirr with a few clacks where the head changes
+track, which is what a real 1541 sounds like loading one file.
+
+**It starts on the user port at 2400 baud**, its build default, and then the
+modem never hears anything: press **F7**, set the modem to **Swift / Turbo
+DE** -- the address has to match *SwiftLnk DE* in the OSD -- and **B** to
+**19200**. Choosing *Zimodem* as the firmware there makes its phone book dial
+with `atd"` and the address in quotes, which Zimodem needs.
 
 **Then press S in that menu**, *save Phone Book and Config*, and keep the name
 `ccgms-phone`. Leaving the menu does not save anything. CCGMS loads that file
