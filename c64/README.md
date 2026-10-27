@@ -109,11 +109,10 @@ for both revisions, and so is the FPGA core.
 
     tools\fill_sdcard.cmd E:
 
-Two files carry a `default` in the core's `c64.xml` and are therefore the ones
-worth having on the card: **`disk8.d64`** as the boot disk and
-**`snds1541.bin`** for the drive sound. The kernal, CRT, PRG, TAP, FLT and REU
-files are optional — their file selectors carry no `default`, and the core
-starts with its **built-in** Dolphin kernal.
+Only **`disk8.d64`** is required — it is the single default in the core's
+`c64.xml`. The kernal, CRT, PRG, TAP, FLT and REU files are optional: their file
+selectors carry no `default`, and the core starts with its **built-in** Dolphin
+kernal.
 
 **Leave `c64kernal.bin` off the card unless you need it.** The core has its own
 power-up loader that reads a kernal from the card and then cold boots the
@@ -165,56 +164,40 @@ FAT32 removes one variable. The sector size must be 512 bytes
 
 ## Drive sound
 
-A 1541 clatters, and this is what makes ours do it. `snds1541.bin` on the card
-is the whole requirement; without the file the drive is simply silent and
-nothing else changes.
+A 1541 clatters, and this is what makes ours do it. **Nothing is needed on the
+card and nothing has to be mounted** — the recordings are in the bitstream.
 
-**The set is not ours.** It is the drive sound data from the **1541 Ultimate**
+**They are not ours.** They are the drive sound data from the **1541 Ultimate**
 firmware by **Gideon Zweijtzer**, recorded from a real 1541 and licensed
-GPL-3.0 — the same licence as this core, which is why it can be used here. It
-lives in the core repository under `sounds/`, beside a note recording where it
-came from, and `tools\fill_sdcard.cmd` copies it from there onto the card.
+GPL-3.0 — the same licence as the core, which is why they can be used here. The
+original lives in the core repository under `sounds/`, beside a note recording
+where it came from, and `sounds/make_hex.py` turns it into the two generated
+files the player reads.
 
-Seven sounds, 8 bit signed PCM at 22050 Hz: the motor hum, the disk slipping in
-its sleeve, a step inwards, a step outwards, the head against the end stop, and
-the disk being put in and taken out. Two of them are worth knowing about:
+Five sounds at 11025 Hz: the motor hum, looped, and four one-shots — a step
+inwards, a step outwards and the head against the end stop. The head against
+the end stop is the loudest of them by a wide margin, and that is not a mistake:
+the clatter of a 1541 seeking to track 1 is what the machine sounds like from
+the next room, and the hum is only the background to it.
 
-- **The drive sounds different with and without a disk**, because the disk rubs
-  against the liner of its sleeve. An empty drive hums; a loaded one slips.
-- **The head against the end stop is the loudest sound in the set** by a wide
-  margin, and the player gives the head channel another factor of 16 on top of
-  that. That is not a mistake. The clatter of a seek to track 1 is what a 1541
-  sounds like from the next room, and the hum is only the background to it.
-
-**Where the samples live is the interesting part.** Not in block RAM. The core
-already uses 42 of the 46 block RAMs of a Tang Nano 20k, and the four that are
-left hold half a second of audio — the Atari ST core keeps its drive sounds in
-14 of them, and that approach simply does not port. They live in the **SDRAM**
-instead, loaded there from the card like any other image, and are read one byte
-at a time through the **DMA time slot the C64 bus logic already produces**, the
-one the REU would otherwise use. About a million of those slots go by every
-second and the player asks for 44100 of them, so it costs the machine nothing;
-when the REU wants a slot, it keeps it and the player waits for the next.
-
-**The set has to be mounted once, by hand.** Under *Storage* in the OSD, pick
-`snds1541.bin` in the **Drive sound** selector, then *Settings -> Save
-settings* so it comes back at the next power-up. The `default="snds1541.bin"`
-in the core's `c64.xml` does **not** do this: a file selector's default only
-tells the companion which directory to open, `/sd` or `/usb`. Nothing in the
-companion mounts an image on its own -- which is why the boot disk has to be
-picked by hand too. Until the set is mounted the drive is silent, and that is
-the normal state after a fresh flash rather than a fault.
+**Two of the seven sounds in the original are dropped**, the disk-slipping loop
+and the insert and remove sounds, and the rate is halved. That is what fits: the
+core leaves exactly **four** of its 46 block RAMs free, and the set now uses all
+four. Picking 11025 Hz over 8000 Hz, which would have fitted everything, was
+deliberate — at 8 kHz the resampling filter takes the bite out of a step, and
+the clack is the sound this exists for.
 
 **Volume** is under *Settings* in the OSD as **Drive sound**, four steps from
-Off. Off is really off: the player stops reading the SDRAM altogether.
+Off.
 
-**What to listen for.** Mounting a disk gives a short mechanical sound. While
-the drive runs there is a hum underneath, quiet by design. `SAVE"X",8` makes the
-head step audibly, because it writes a file and then the BAM on track 18.
-`LOAD"$",8` on its own makes no step sound at all and that is correct: the head
-is already parked on track 18 after a mount, and the directory is on track 18.
-The head against the end stop is the loudest thing in the set and wants
-software that seeks to track 1.
+**What to listen for.** While the drive runs there is a hum underneath, quiet by
+design. `SAVE"X",8` makes the head step audibly, because it writes a file and
+then the BAM on track 18. `LOAD"$",8` on its own makes no step sound at all and
+that is correct: the head is already parked on track 18 after a mount, and the
+directory is on track 18. The head against the end stop wants software that
+seeks to track 1.
+
+
 
 ## A German keyboard
 
