@@ -109,16 +109,24 @@ for both revisions, and so is the FPGA core.
 
     tools\fill_sdcard.cmd E:
 
-Only **`disk8.d64`** is required — it is the single default in the core's
-`c64.xml`. The kernal, CRT, PRG, TAP, FLT and REU files are optional: their file
-selectors carry no `default`, and the core starts with its **built-in** Dolphin
-kernal.
+The script puts two things on the card: **`disk8.d64`** as the boot disk, and
+**the original Commodore kernal**, `kernal-901227-03.bin`. On a card without a
+`c64.ini` it also writes a starter one that selects that kernal and CBM DOS 2.6
+for the drive. An existing `c64.ini` is left alone; the script then says what to
+set in the OSD.
 
-**Leave `c64kernal.bin` off the card unless you need it.** The core has its own
-power-up loader that reads a kernal from the card and then cold boots the
-machine — and a cold boot makes the companion reset itself, see the
-troubleshooting section. The script therefore copies the kernal only when you
-pass `kernal` as a second argument.
+**The standard here is the original machine.** The core has Dolphin DOS built
+in, and Dolphin binds the function keys to its own commands -- F7 lists the
+directory -- and keeps them bound inside programs, so a terminal program never
+sees F7 at all. Its manual has `CTRL X` to switch the keys off; on this setup it
+did not. The original kernal has no such keys. It ships with the upstream core
+in `firmware_original/` (CRC32 `dbe3e7c7`, the known value for 901227-03); the
+companion loads it at power-up and holds the core in reset until it is in.
+Dolphin DOS comes back by unmounting it under *Storage -> C64 KERNAL:*, and
+*System -> C1541 ROM:* switches the drive between CBM DOS and Dolphin.
+
+No file name is special. The kernal is whatever the *C64 KERNAL:* selector
+points at, which `c64.ini` remembers as `drive3=`.
 
 Once a disk is mounted under **Storage** in the OSD, read its directory the
 way the machine has always wanted it:
@@ -145,8 +153,8 @@ every removable volume it writes to, and there is no practical way to stop it
 coming back. It never shows up in the OSD: the companion's directory listing
 skips every entry with the hidden or system attribute
 (`if(fno.fname[0] != 0 && !(fno.fattrib & (AM_HID|AM_SYS)))` in `sdc.c`), and
-Windows creates that directory with both. The core's own power-up loader looks
-for fixed file names and ignores directories as well. Leave it alone — only if
+Windows creates that directory with both. The core reads only the images the
+companion mounts, so it never sees the directory either. Leave it alone — only if
 somebody clears those attributes by hand does it appear as a folder you can
 step into, and even then it is merely untidy.
 
@@ -206,8 +214,8 @@ label those positions the way a US keyboard is printed, so the key printed Y
 gives Z, the key printed + gives *, and the key printed - gives /.
 
 The correction lives in the companion, not in a core -- it costs the FPGA
-nothing, and the C64 core has seven of its 10368 logic slices left after the
-drive sound, so a second table in there would not fit. It is off by default and
+nothing, and the C64 core has only a handful of its 10368 logic slices left, so
+a second table in there would not fit. It is off by default and
 set **per core**, in the ini the core loads at start-up:
 
     option keymap=1
@@ -221,12 +229,73 @@ the 0 to a 1 and power cycle.
 Per core means a C64 can be German while the Atari ST stays US, which is the
 right default: a German TOS does its own mapping and would be corrected twice.
 
-What this fixes is **Y and Z**, the **+** key and the **-** key, plus the
-keypad's own `/`. What it cannot fix is the umlauts and `#` -- a C64 has no such
+What this fixes is **Y and Z**, the **+** key and the **-** key, the keypad's
+own `/`, and **`&` `(` `)` on shift-6, shift-8 and shift-9** as printed. Those
+last three need a table of their own: the core remaps the shifted number row
+from US labels to the C64's, and a German keyboard already agrees with the C64
+there, so the companion undoes the core's remap for them. What it cannot fix is the umlauts and `#` -- a C64 has no such
 keys. Those stay where the US mapping puts them, which leaves `@` next to P and
 `:` `;` next to L, exactly where a C64 has them. `*` moves to the acute key and
 `/` with `?` to the sharp-s key, whose shift is `?` on a German keyboard as
 well.
+
+## The modem: WiFi for the C64
+
+The same add-on as on the Atari ST: an **ESP32-S3 DevKitC-1** (N16R8) running
+[our Zimodem fork](https://github.com/rcdev67/Zimodem), on the same three pins.
+The onboard BL616 stays the companion with the USB hub.
+
+| ESP32-S3 | Tang Nano 20K | |
+|---|---|---|
+| GPIO16 (TX) | 41 | the C64 receives here |
+| GPIO15 (RX) | 51 | the C64 sends here |
+| GPIO17 | 54 | Bluetooth controllers, not read by the C64 core yet |
+| GND | GND | |
+
+**Leave pin 56 unconnected** -- pulling it low switches the companion to an
+external dock and the keyboard disappears. **Power the S3 through its own
+"UART" USB socket**; from the Tang's 5V it browned out at every WiFi join. And
+**switch the Tang on first, the S3 after**: a separately powered modem feeds the
+switched-off Tang through pin 41, and the SD card then fails to start -- a red
+LED that looks like anything but a power-up order.
+
+**Flash the S3** with `zimodem-s3-devkitc-bluepad32.bin` from the fork's
+release `nano20k-2026-09-21`, through the "UART" socket. The other socket is the
+S3's native USB and shows up as Espressif's own `303A`; the UART one is a
+CH343, `1A86`.
+
+    esptool --chip esp32s3 --port COMx --baud 460800 write-flash 0x0 zimodem-s3-devkitc-bluepad32.bin
+
+At power-up its debug output on that socket at 115200 says
+`Using BPS 19200, RXD 15, TXD 16`. That socket carries only debug output: the
+modem itself is on GPIO15/16, so its WiFi is set up from the C64, not the PC.
+
+**In the OSD**, *RS232 mode: SwiftLnk DE* and *RS232 port: 6551 Ext.* The 6551
+in this core has no transmitter of its own and only ever talked to the
+companion through FIFOs; that port setting now routes those FIFOs to a UART on
+the pins instead. The UART follows the rate the terminal program sets in the
+6551.
+
+**A terminal program** that speaks SwiftLink: [CCGMS
+Future](https://github.com/mist64/ccgmsterm) (`ccgms.prg` from release v0.2,
+BSD-3-Clause -- not the EasyFlash build, which has no SwiftLink). Load it under
+*Storage -> PRG BASIC:* and `RUN`. **It starts on the user port at 2400 baud**,
+its build default, and then the modem never hears anything: press **F7**, set
+the modem to **SwiftLink $DE00** and **B** to **19200**. Choosing *Zimodem* as
+the firmware there makes its phone book dial with `atd`.
+
+Then, with **F8 set to ASCII** for the setup -- in PETSCII upper and lower case
+come across swapped, and the modem takes what is inside the quotes exactly as
+it arrives:
+
+    at                          -> OK
+    atw                         lists the networks in range
+    atw"MyNetwork,MyPassword"   joins
+    ati                         ERROR ON ... until it is in, then CONNECTED TO ... (ip)
+    at&w                        saves; it joins by itself at every power-up
+    atdt bbs.retro32.com:1337   dials a BBS -- F8 back to PETSCII for C64 graphics
+    +++                         with a second's pause either side: command mode
+    ath                         hangs up
 
 ## Reading the LEDs
 

@@ -2,24 +2,25 @@
 rem ---------------------------------------------------------------------------
 rem Fill an SD card with everything the C64 core needs.
 rem
-rem Usage:  fill_sdcard.cmd E: [kernal]
+rem Usage:  fill_sdcard.cmd E:
 rem
-rem The card has to be FAT32. Nothing is deleted, only copied and overwritten.
+rem The card has to be FAT32. Nothing is deleted, only copied and overwritten,
+rem and an existing c64.ini is left alone.
 rem
-rem The kernal is NOT copied unless you ask for it. The core has its own
-rem Dolphin kernal built in, and a kernal on the card is loaded by the core's
-rem own power-up loader, which then cold boots the machine - and a cold boot
-rem makes the companion reset itself ("FPGA cold boot detected, reseting MCU"
-rem in sysctrl.c). See the troubleshooting section of ..\README.md.
+rem The standard is the original machine: the Commodore kernal 901227-03 and CBM
+rem DOS 2.6 in the drive. The core has Dolphin DOS built in, which binds the
+rem function keys to its own commands -- F7 lists the directory -- and catches
+rem them even inside programs, so a terminal program never sees F7. The kernal
+rem goes on the card and the companion loads it at power-up, holding the core
+rem in reset until it is in. Dolphin DOS comes back by unmounting it under
+rem Storage -> C64 KERNAL: in the OSD.
 rem ---------------------------------------------------------------------------
 
 setlocal
 set TARGET=%~1
-set WANT_KERNAL=%~2
 if "%TARGET%"=="" (
-  echo Usage: fill_sdcard.cmd ^<drive^> [kernal]
+  echo Usage: fill_sdcard.cmd ^<drive^>
   echo Example: fill_sdcard.cmd E:
-  echo          fill_sdcard.cmd E: kernal
   goto :done
 )
 if not exist "%TARGET%\" (
@@ -27,28 +28,44 @@ if not exist "%TARGET%\" (
   goto :done
 )
 
+rem CORE_REPO, for the kernal that ships with the core
+call "%~dp0..\flash\paths.cmd"
+
 set SDCARD=%~dp0..\sdcard
-set ROMS=%~dp0..\flash\roms
+set KERNAL=%CORE_REPO%\firmware_original\kernal.901227-03.bin
 
 echo === Required: the empty image as the boot disk ===
 copy /y "%SDCARD%\disk8.d64" "%TARGET%\disk8.d64"
 if errorlevel 1 ( echo FAILED & goto :done )
 
 echo.
-echo === Optional, only on request: the Dolphin kernal as c64kernal.bin ===
-if /i not "%WANT_KERNAL%"=="kernal" (
-  echo not requested - pass "kernal" as the second argument to copy it
-  if exist "%TARGET%\c64kernal.bin" (
-    echo   NOTE: %TARGET%\c64kernal.bin is already on the card. The core loads
-    echo   it at power-up and then cold boots, which restarts the companion.
-    echo   Delete it if the machine keeps restarting.
-  )
+echo === The original Commodore kernal, 901227-03 ===
+rem It ships with the upstream core in firmware_original; nothing is fetched.
+if exist "%KERNAL%" (
+  copy /y "%KERNAL%" "%TARGET%\kernal-901227-03.bin"
 ) else (
-  if exist "%ROMS%\dd2_kernal_rom.bin" (
-    copy /y "%ROMS%\dd2_kernal_rom.bin" "%TARGET%\c64kernal.bin"
-  ) else (
-    echo skipped - %ROMS%\dd2_kernal_rom.bin is not there
+  echo MISSING: %KERNAL%
+  goto :done
+)
+
+echo.
+echo === Settings: the original machine, unless the card already has its own ===
+rem drive3 is the C64 KERNAL file selector, D the C1541 ROM: 1 is CBM DOS 2.6.
+rem The companion fills in everything else from the core's defaults and writes
+rem the whole file back on "Save settings".
+if exist "%TARGET%\c64.ini" (
+  echo   %TARGET%\c64.ini exists and is left as it is. For the original machine,
+  echo   in the OSD: Storage - C64 KERNAL: kernal-901227-03.bin, System - C1541
+  echo   ROM: CBM DOS, then Settings - Save settings.
+) else (
+  > "%TARGET%\c64.ini" (
+    echo ; FPGA Companion settings, a starter written by fill_sdcard.cmd
+    echo ; the original Commodore kernal, and CBM DOS 2.6 in the drive
+    echo var D=1
+    echo drive0=/sd/disk8.d64
+    echo drive3=/sd/kernal-901227-03.bin
   )
+  echo   written: %TARGET%\c64.ini
 )
 
 echo.
