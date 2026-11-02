@@ -41,18 +41,15 @@ if errorlevel 1 (
   goto :done
 )
 
-rem The SDK links with -flto, which the Windows toolchain cannot do: the link
-rem fails. The SDK's own README asks for -fno-lto on Windows. So the one line
-rem "-flto" in sdk_add_link_options of cmake\compiler_flags.cmake becomes
-rem "-fno-lto" -- the compile option sdk_add_compile_options(-flto) stays. Done
-rem with Python and not with a patch file, because the file's line endings
-rem depend on how git checked the SDK out.
-findstr /c:"-fno-lto" "%BL616_SDK%\cmake\compiler_flags.cmake" >nul
-if errorlevel 1 (
-  echo The SDK still links with -flto. Changing that one line to -fno-lto ...
-  "%PYTHON%" -c "import re,sys;p=sys.argv[1];b=open(p,'rb').read();n,c=re.subn(rb'(?m)^([ \t]+)-flto(\r?)$',rb'\1-fno-lto\2',b,count=1);open(p,'wb').write(n);sys.exit(0 if c==1 else 1)" "%BL616_SDK%\cmake\compiler_flags.cmake"
-  if errorlevel 1 ( echo FAILED: the line was not found. Is the SDK v2.3.33, see TOOLS.md? & goto :done )
-)
+rem Two changes the companion needs in the SDK, made by sdk_fixes.py next to
+rem this file, once, and recognised as made after that: the link option -flto
+rem the Windows toolchain cannot handle, and USB devices with more alternate
+rem settings than the companion keeps room for -- a Bluetooth adapter -- being
+rem refused instead of having the surplus skipped. The script says why in
+rem detail.
+echo Checking the SDK ...
+"%PYTHON%" "%~dp0sdk_fixes.py" "%BL616_SDK%"
+if errorlevel 1 ( echo FAILED. Is the SDK v2.3.33, see TOOLS.md? & goto :done )
 
 set BL_SDK_BASE=%BL616_SDK%
 rem make, ninja and cmake from the SDK itself, so none has to be installed.
