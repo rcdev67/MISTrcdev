@@ -53,8 +53,9 @@ nearly three times as much, and can stop at a path longer than Windows allows.
 Then the tools from [`TOOLS.md`](TOOLS.md), and one of two ways:
 
 - **Flash ready-made binaries**: [`get_binaries.cmd`](get_binaries.cmd) puts
-  them into `bin\`, built from exactly these sources, tested on the board and
-  checked against [`bin.sha256`](bin.sha256). Only a few of the tools are
+  them into `bin\`, built from exactly these sources and checked against
+  [`bin.sha256`](bin.sha256); which of them ran on a board before the release
+  is in its notes. Only a few of the tools are
   needed for this.
 - **Build everything yourself**: the `build_*.cmd` scripts below build into
   the same `bin\`. A build of the same sources does not match the release

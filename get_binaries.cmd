@@ -6,8 +6,8 @@ rem Usage:  get_binaries.cmd          fetch what is missing
 rem         get_binaries.cmd force    also replace what differs from the release
 rem
 rem They come from this repository's GitHub release named below, built from
-rem the sources pinned under sources\ and tested on the board, and each is
-rem checked against bin.sha256 next to this file.
+rem the sources pinned under sources\, and each is checked against bin.sha256
+rem next to this file. The release notes say which ran on a board.
 rem
 rem A file already in bin\ that differs from the release is most likely your
 rem own build, and is kept unless you say force. Builds of the same sources do
