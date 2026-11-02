@@ -39,23 +39,32 @@ generated file that is tracked upstream; the script puts it back.
 The GW2AR-18 is **nearly full**: 97 % logic, 92 % block RAM, both PLLs in use.
 Making room for additions means taking something else out.
 
-## 2. Obtain the ROM images
+## 2. Fetch the ROM images
 
-They are not ours, so they are **not** in this repository. `flash/roms/` is
-excluded; these belong in it:
+    flash\get_roms.cmd
 
-| File | Size | Flash address | Source |
+They are not ours, so they are **not** in this repository. The C64's own --
+BASIC, the kernals, the character set -- come with the core's sources, in
+[`../sources/C64Nano/firmware_original`](../sources/C64Nano/firmware_original),
+and need nothing. What the drive needs, the script fetches into `flash\roms\`
+from exactly where the C64Nano maintainers point to in their installation
+guide, and checks each against the file this setup was tested with:
+
+| File | Size | Flash address | From |
 |---|---|---|---|
-| `2dosa_c.bin` | 32K | `0x200000` | Dolphin DOS 2, from SilverDream's restoration project |
-| `dos1541-325302-01+901229-05.bin` | 16K | `0x20C000` | CBM DOS 2.6, from the VICE data files |
-| `dd2_kernal_rom.bin` | 8K | SD card | C64 kernal that goes with Dolphin DOS 2 |
+| `dos1541-325302-01+901229-05.bin` | 16K | `0x20C000` | CBM DOS 2.6, from the sources of the VICE emulator, through the VICE team's own mirror on GitHub |
+| `2dosa_c.bin` | 32K | `0x200000` | Dolphin DOS 2, from Silver Dream's Dolphin DOS restoration |
 
-VICE ships the CBM DOS as **one** 16K file. If you only have the two 8K
-halves, concatenate them in this order: `1541-c000.325302-01.bin` (low,
-`$C000`–`$DFFF`), then `1541-e000.901229-05.bin` (high, `$E000`–`$FFFF`).
-Check: the reset vectors at the end of the file must read `NMI $FF01`,
-`RESET $EAA0`, `IRQ $FE67` — with the halves the wrong way round there is
-program code there instead.
+If a download fails, the file may have moved; the maintainers' guide,
+[`../sources/C64Nano/INSTALLATION_WINDOWS.md`](../sources/C64Nano/INSTALLATION_WINDOWS.md),
+says where it is now. Put it into `flash\roms\` under the name above and run
+`get_roms.cmd` again: it checks a file it finds there instead of fetching it.
+
+**Found the CBM DOS as two 8K halves** instead of one 16K file? Concatenate
+them in this order: `1541-c000.325302-01.bin` (low, `$C000`–`$DFFF`), then
+`1541-e000.901229-05.bin` (high, `$E000`–`$FFFF`). Check: the reset vectors
+at the end of the file must read `NMI $FF01`, `RESET $EAA0`, `IRQ $FE67` --
+with the halves the wrong way round there is program code there instead.
 
 Speed DOS Plus (`0x214000`) and Jiffy DOS (`0x21C000`) are possible but not
 needed. Without them only their OSD entries lead nowhere.

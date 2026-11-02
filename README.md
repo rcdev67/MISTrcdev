@@ -97,8 +97,11 @@ the new pin here. A new release then gets the binaries built from it, and
 
 ## What is not kept here
 
-**ROM images.** They are not ours to publish. Where they come from and where
-they belong is documented per machine; the directories for them are excluded
+**ROM images.** They are not ours to publish. For the C64 nothing has to be
+searched for: its own ROMs come with the core's sources, and
+`c64\flash\get_roms.cmd` fetches the two 1541 ROMs from where the C64Nano
+maintainers point to. The Atari ST's TOS is Atari's and has no such source;
+its guide says which images go where. The directories for ROMs are excluded
 from version control.
 
 **The tools.** [`TOOLS.md`](TOOLS.md) names each one with its version and
