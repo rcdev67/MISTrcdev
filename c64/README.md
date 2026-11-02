@@ -182,28 +182,35 @@ original lives in the core repository under `sounds/`, beside a note recording
 where it came from, and `sounds/make_hex.py` turns it into the two generated
 files the player reads.
 
-Five sounds at 11025 Hz: the motor hum, looped, and four one-shots — a step
-inwards, a step outwards and the head against the end stop. The head against
-the end stop is the loudest of them by a wide margin, and that is not a mistake:
-the clatter of a 1541 seeking to track 1 is what the machine sounds like from
-the next room, and the hum is only the background to it.
+Five sounds at 11025 Hz. Two loops: the hum of a drive running empty, and the
+slip of a disk rubbing against the liner of its sleeve, which is what a loaded
+drive sounds like. Three one-shots: a step inwards, a step outwards and the head
+against the end stop. A clack stands about 12 dB above the running noise, and
+the head against the end stop is the loudest of all.
 
-**Two of the seven sounds in the original are dropped**, the disk-slipping loop
-and the insert and remove sounds, and the rate is halved. That is what fits: the
-core leaves exactly **four** of its 46 block RAMs free, and the set now uses all
-four. Picking 11025 Hz over 8000 Hz, which would have fitted everything, was
-deliberate — at 8 kHz the resampling filter takes the bite out of a step, and
-the clack is the sound this exists for.
+**Two of the seven sounds in the original are dropped**, the insert and remove
+sounds, and the rate is halved. That is what fits: the core leaves exactly
+**four** of its 46 block RAMs free, and the set uses all four. Picking 11025 Hz
+over 8000 Hz was deliberate — at 8 kHz the resampling filter takes the bite out
+of a step, and the clack is the sound this exists for.
 
 **Volume** is under *Settings* in the OSD as **Drive sound**, four steps from
 Off.
 
-**What to listen for.** While the drive runs there is a hum underneath, quiet by
-design. `SAVE"X",8` makes the head step audibly, because it writes a file and
-then the BAM on track 18. `LOAD"$",8` on its own makes no step sound at all and
-that is correct: the head is already parked on track 18 after a mount, and the
-directory is on track 18. The head against the end stop wants software that
-seeks to track 1.
+**What to listen for.** With a disk in, the drive slips while it runs; without
+one it hums, quieter. **Clacks during a load are rare, and that is right**: a
+standard `LOAD` reads a track in about ten seconds, and a file next to the
+directory changes track only a few times — CCGMS, 60 blocks, gives two or three
+clacks in its 30 seconds, as a real 1541 would. `SAVE"X",8` makes the head step
+audibly, because it writes a file and then the BAM on track 18. `LOAD"$",8`
+with a disk makes no step sound, which is correct: the head is already parked on
+track 18 after a mount. Without a disk the drive cannot read, retries and knocks
+the head against the end stop.
+
+**If it crackles** like a campfire while the drive runs, the core is older than
+the fix in its `src/misc/video.v`: the HDMI side took the audio word in a race
+with its change, and the drive sound, which jumps by thousands once per sample,
+made that audible.
 
 
 
