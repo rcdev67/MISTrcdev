@@ -17,8 +17,7 @@ rem bitstreams were built with. build.tcl is the maintainers' and lacks all
 rem three of those files.
 if not exist "%ST_CORE%\src\build_p2r1.tcl" (
   echo MISSING: %ST_CORE%\src\build_p2r1.tcl
-  echo The sources are not there. Clone with --recursive, or run
-  echo   git submodule update --init --recursive
+  echo The sources are not there: run get_sources.cmd in MISTrcdev first.
   goto :done
 )
 

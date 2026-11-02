@@ -26,8 +26,18 @@ if not exist "%BL616_SDK%\cmake\compiler_flags.cmake" ( echo MISSING: the Bouffa
 if not exist "%BL616_TOOLCHAIN%\bin\riscv64-unknown-elf-gcc.exe" ( echo MISSING: the toolchain at %BL616_TOOLCHAIN%  -  see TOOLS.md & goto :done )
 if not exist "%COMPANION%\src\bl616\Makefile" (
   echo MISSING: %COMPANION%\src\bl616\Makefile
-  echo The sources are not there. Clone with --recursive, or run
-  echo   git submodule update --init --recursive
+  echo The sources are not there: run get_sources.cmd in MISTrcdev first.
+  goto :done
+)
+
+rem The BL616 compiler cannot open a path longer than 260 characters, and its
+rem deepest build file adds about 125 to the MISTrcdev directory -- a build in a
+rem deep folder fails with "opening output file ...: No such file or directory".
+powershell -NoProfile -Command "if ('%MISTRCDEV%'.Length -gt 100) { exit 1 }"
+if errorlevel 1 (
+  echo MISTrcdev lies too deep for the BL616 compiler:
+  echo   %MISTRCDEV%
+  echo Move or clone it to a short path, such as C:\MISTrcdev, and build there.
   goto :done
 )
 

@@ -17,8 +17,7 @@ call "%~dp0..\paths.cmd"
 if not exist "%GW_SH%" ( echo MISSING: %GW_SH%  -  see TOOLS.md & goto :done )
 if not exist "%C64_CORE%\src\scripts\build.tcl" (
   echo MISSING: %C64_CORE%\src\scripts\build.tcl
-  echo The sources are not there. Clone with --recursive, or run
-  echo   git submodule update --init --recursive
+  echo The sources are not there: run get_sources.cmd in MISTrcdev first.
   goto :done
 )
 

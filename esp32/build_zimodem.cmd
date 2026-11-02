@@ -20,8 +20,7 @@ call "%~dp0..\paths.cmd"
 
 if not exist "%ZIMODEM%\zimodem\zimodem.ino" (
   echo MISSING: %ZIMODEM%\zimodem\zimodem.ino
-  echo The sources are not there. Clone with --recursive, or run
-  echo   git submodule update --init --recursive
+  echo The sources are not there: run get_sources.cmd in MISTrcdev first.
   goto :done
 )
 "%ARDUINO_CLI%" version >nul 2>&1

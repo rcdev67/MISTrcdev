@@ -32,13 +32,23 @@ prior knowledge can work through.
 
 ## Getting started
 
-One command fetches everything -- this repository and, pinned to the exact
-state that was tested, the sources of both cores, the companion and the modem:
+Clone this repository, then fetch the sources -- both cores, the companion
+and the modem, pinned to the exact state that was tested:
 
-    git clone --recursive https://github.com/rcdev67/MISTrcdev.git
+    cd /d C:\
+    git clone https://github.com/rcdev67/MISTrcdev.git
+    cd MISTrcdev
+    get_sources.cmd
 
-Already cloned without `--recursive`? `git submodule update --init --recursive`
-fetches the sources afterwards.
+**Keep the path short**, `C:\MISTrcdev` or similar, at most 100 characters.
+The BL616 compiler cannot open paths longer than 260 characters, and its
+deepest build file adds about 125 to wherever MISTrcdev lies;
+`companion\build_companion.cmd` checks this before it starts.
+
+[`get_sources.cmd`](get_sources.cmd) fetches what the builds need, about
+500 MB, and switches on the long paths some of them need on Windows. A plain
+`git clone --recursive` would also fetch every submodule of every submodule,
+nearly three times as much, and can stop at a path longer than Windows allows.
 
 Then the tools from [`TOOLS.md`](TOOLS.md), and one of two ways:
 
@@ -69,8 +79,7 @@ vendors' user interfaces. Then the guide for your machine:
 | `bin\` | what the scripts build or fetch; not part of the repository |
 | [`COMPANION-CORE-CONTRACT.md`](COMPANION-CORE-CONTRACT.md) | **read this before porting to another machine**: what our companion needs from a core that an upstream core does not provide, and what breaks when it is missing |
 
-The sources under `sources/` are our forks, so that changes can still go back
-to the maintainers:
+The sources under `sources/` are our forks of the maintainers' repositories:
 
 | Directory | Fork | Branch | Pinned at |
 |---|---|---|---|

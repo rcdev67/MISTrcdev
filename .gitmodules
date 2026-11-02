@@ -3,18 +3,22 @@
 	url = https://github.com/rcdev67/C64Nano.git
 	branch = nano20k-running
 	shallow = true
+	ignore = untracked
 [submodule "sources/MiSTeryNano"]
 	path = sources/MiSTeryNano
 	url = https://github.com/rcdev67/MiSTeryNano.git
 	branch = nano20k-running
 	shallow = true
+	ignore = untracked
 [submodule "sources/FPGA-Companion"]
 	path = sources/FPGA-Companion
 	url = https://github.com/rcdev67/FPGA-Companion.git
 	branch = net-download
 	shallow = true
+	ignore = untracked
 [submodule "sources/Zimodem"]
 	path = sources/Zimodem
 	url = https://github.com/rcdev67/Zimodem.git
 	branch = c3-supermini-misterynano
 	shallow = true
+	ignore = untracked
