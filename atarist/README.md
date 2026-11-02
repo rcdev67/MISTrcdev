@@ -62,13 +62,14 @@ recorded place and route options.
    This core uses the JTAG pins as regular IO, so before **every** step:
    unplug, hold **S2**, plug in, hold two seconds, release. The script asks
    each time.
-4. **Flash the companion**, see [`../companion/README.md`](../companion/README.md):
-   the board in update mode, then
-   `..\companion\flash_companion.cmd COM12 3921` -- with your port and your
-   board revision, which that page tells you how to find.
-5. **The modem**, if you have one:
-   `..\esp32\flash_zimodem.cmd COM7 bt` -- the Bluetooth build, so a game
-   controller can pair. Then wire it as in section 3.
+4. **Flash the companion**: `..\companion\flash_companion.cmd`. It asks for
+   the board revision and finds the port itself, telling you when to unplug
+   and how to plug the board in. Not sure about the revision, or what update
+   mode is? [`../companion/README.md`](../companion/README.md) explains both,
+   step by step.
+5. **The modem**, if you have one: `..\esp32\flash_zimodem.cmd bt` -- the
+   Bluetooth build, so a game controller can pair. It finds the S3's port the
+   same way. Then wire it as in section 3.
 6. **The SD card** holds your disk images (`.ST`), hard disk images and
    the settings file `atarist.ini`, which the companion writes when you
    choose `Save settings`.

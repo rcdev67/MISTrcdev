@@ -87,13 +87,14 @@ as soon as a core is running that uses the JTAG pins as regular IO.
 Only needed on a board that has no companion yet, or to pick up a change in
 the firmware. Everything about it -- the two board revisions and how to tell
 them apart, building, flashing, the console -- is in
-[`../companion/README.md`](../companion/README.md). In short, with the board
-in **update mode** (unplug, hold `UPDATE`, plug into the PC, release):
+[`../companion/README.md`](../companion/README.md). In short:
 
-    ..\companion\flash_companion.cmd COM12 3921
+    ..\companion\flash_companion.cmd
 
-with your port and your board revision. **Only the companion image is board
-specific**; the FPGA core is the same for both revisions.
+It asks for the board revision, 3921 or 3923, and finds the port itself,
+telling you when to unplug the board and how to plug it in, in update mode.
+**Only the companion image is board specific**; the FPGA core is the same for
+both revisions.
 
 ## 5. Fill the SD card
 
@@ -260,7 +261,10 @@ LED that looks like anything but a power-up order.
 socket is the S3's native USB and shows up as Espressif's own `303A`; the UART
 one is a CH343, `1A86`.
 
-    ..\esp32\flash_zimodem.cmd COMx
+    ..\esp32\flash_zimodem.cmd
+
+It finds the S3's port itself: unplug the S3 when it says so, then plug its
+UART socket in.
 
 The image is `bin\zimodem-s3-devkitc.bin`, from
 [`..\esp32\build_zimodem.cmd`](../esp32/build_zimodem.cmd) or

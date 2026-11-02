@@ -24,14 +24,24 @@ companion images. Everything else is the same.
 According to the maintainers the 3923 appeared in mid-2026; its bottom
 silkscreen has the pin labels 25/26 corrected.
 
-**Which one do I have?** No marking tells them apart reliably, but the board
-tells you, and the wrong image does no harm, because the two GPIO pairs are
-unused on the other revision. Flash a core and one of the two images, power
-the board from a supply (see below) and press F12. With the right image the
-menu opens, the settings from the card apply, and the console says
-`FPGA ready after ...ms`. With the wrong one the machine still starts, with
-the core's defaults, F12 does nothing and the console stays silent. Then
-flash the other image.
+**Which one do I have?** Nothing printed on the board tells them apart
+reliably. But the board tells you itself, and trying is safe: the wrong image
+does no harm, because the two GPIO pairs it uses are unconnected on the other
+revision. How, step by step:
+
+1. Flash a core first (the C64 or the Atari ST, see its guide).
+2. Run `flash_companion.cmd` and, asked for the revision, choose **3921**.
+3. Unplug the board from the PC and power it from a **USB power supply**,
+   with the hub, keyboard and HDMI screen on it -- not from the PC, see the
+   next section.
+4. When the machine is up, press **F12**.
+   - **The menu opens**: it is a 3921. Write it on the board.
+   - **Nothing happens**: it is a 3923. Back to the PC, run
+     `flash_companion.cmd` again and choose 3923. F12 then opens the menu.
+
+With the wrong image the machine still starts, but with the core's defaults,
+not your saved settings, and a serial console on pin 48 (see the end of this
+page) stays silent instead of saying `FPGA ready after ...ms`.
 
 ## PC or power supply decides what the BL616 does
 
@@ -60,14 +70,32 @@ into `bin\`.
 
 ## Flash
 
-Unplug the board, hold **UPDATE**, plug it into the PC, release. The BL616
-appears as a serial port -- not one of the board's two FTDI ports. Then
+    flash_companion.cmd
 
-    flash_companion.cmd COM12 3921
+and it asks for everything it needs and says what to do:
 
-with your port and your revision. Started without arguments it lists the
-ports present. It writes the Partner to `0x0` and the companion to
-`0x40000`.
+1. **The revision**, 3921 or 3923. Not sure? See *Which one do I have?*
+   above; take 3921 first.
+2. **The port.** The BL616 is flashed through its bootloader, a serial port
+   that exists only in **update mode**. Windows gives it a number, `COM12`
+   for example, that depends on the PC and even on the USB socket, and a
+   name after its driver, not after the board. So the script finds it by
+   watching: it asks you to **unplug** the board and notes the ports present,
+   then you put the board into update mode and the one port that appears is
+   the right one. Update mode, in this order:
+   - hold the button marked **UPDATE** on the board -- not S1 or S2,
+   - keep holding it while you plug the board into the PC,
+   - release it once it is plugged in.
+
+   No new port within 30 seconds? Then the cable carries power only, or the
+   button was released too early: unplug and run it again.
+3. It writes the FPGA Partner to `0x0` and the companion to `0x40000`, and
+   then says how to check that it worked.
+
+Knowing both already, `flash_companion.cmd COM12 3921` skips the questions.
+The two ports the board shows when it is plugged in **normally** -- two
+`USB Serial Port` entries of its debugger -- are **not** the one: they are
+for flashing the FPGA, not the BL616.
 
 ## The console
 

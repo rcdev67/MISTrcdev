@@ -22,11 +22,18 @@ The board packages for building are in [`../TOOLS.md`](../TOOLS.md).
 
 ## Flash
 
-Take the S3 off the Tang and connect its **UART** USB socket to the PC -- a
-CH343, `1A86`; the other socket is the S3's native USB, Espressif's `303A`.
+Take the S3 off the Tang. Of its two USB sockets the one to use is marked
+**UART** (on some boards COM) -- a CH343 chip, VID `1A86`; the other, marked
+USB, is the S3's own, Espressif's `303A`, and is not used here.
 
-    flash_zimodem.cmd COM7          the plain modem
-    flash_zimodem.cmd COM7 bt       with Bluetooth
+    flash_zimodem.cmd               the plain modem
+    flash_zimodem.cmd bt            with Bluetooth
+
+The script finds the port itself: when it says so, unplug the S3, then plug
+the cable into its UART socket; the one port that appears is the S3. Knowing
+the port already, `flash_zimodem.cmd COM7` skips that. If flashing fails
+although the port was found, unplug the S3, hold its **BOOT** button while
+plugging it in, release, and run it again.
 
 This writes the whole flash from `0x0`, the saved WiFi settings included:
 afterwards the network is joined again from the machine, `atw"Network,Password"`
