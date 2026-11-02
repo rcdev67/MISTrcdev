@@ -14,7 +14,7 @@ setlocal
 call "%~dp0paths.cmd"
 
 if not exist "%PROG%" ( echo MISSING: %PROG% & goto :done )
-if not exist "%FS%"   ( echo MISSING: %FS%  -  build the core first & goto :done )
+if not exist "%FS%"   ( echo MISSING: %FS%  -  build it with ..\build_core.cmd, or fetch it with ..\..\get_binaries.cmd & goto :done )
 
 echo Core: %FS%
 for %%F in ("%FS%") do echo Built: %%~tF

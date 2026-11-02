@@ -3,3 +3,10 @@
 # whatever their own git settings are.
 *.cmd text eol=crlf
 *.bat text eol=crlf
+
+# C64 programs and disk images are bytes, never text
+*.prg binary
+*.d64 binary
+
+# bin.sha256 is read by get_binaries.cmd line by line
+bin.sha256 text eol=crlf

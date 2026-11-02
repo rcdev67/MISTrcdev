@@ -4,8 +4,12 @@ rem Fill an SD card with everything the C64 core needs.
 rem
 rem Usage:  fill_sdcard.cmd E:
 rem
-rem The card has to be FAT32. Nothing is deleted, only copied and overwritten,
-rem and an existing c64.ini is left alone.
+rem The card has to be FAT32. Nothing is deleted. An existing disk8.d64 and an
+rem existing c64.ini are left alone: the disk holds what the C64 saved on it,
+rem CCGMS's settings among them, and the ini what the OSD saved.
+rem
+rem A new boot disk gets CCGMS on it, the terminal program for the WiFi modem
+rem (BSD licence, ..\software\ccgms\LICENSE.txt): LOAD"CCGMS",8 and RUN.
 rem
 rem The standard is the original machine: the Commodore kernal 901227-03 and CBM
 rem DOS 2.6 in the drive. The core has Dolphin DOS built in, which binds the
@@ -28,15 +32,21 @@ if not exist "%TARGET%\" (
   goto :done
 )
 
-rem CORE_REPO, for the kernal that ships with the core
+rem C64_CORE, for the kernal that ships with the core
 call "%~dp0..\flash\paths.cmd"
 
 set SDCARD=%~dp0..\sdcard
-set KERNAL=%CORE_REPO%\firmware_original\kernal.901227-03.bin
+set KERNAL=%C64_CORE%\firmware_original\kernal.901227-03.bin
 
-echo === Required: the empty image as the boot disk ===
-copy /y "%SDCARD%\disk8.d64" "%TARGET%\disk8.d64"
-if errorlevel 1 ( echo FAILED & goto :done )
+echo === Required: the boot disk ===
+if exist "%TARGET%\disk8.d64" (
+  echo   %TARGET%\disk8.d64 exists and is left as it is.
+) else (
+  copy /y "%SDCARD%\disk8.d64" "%TARGET%\disk8.d64"
+  if errorlevel 1 ( echo FAILED & goto :done )
+  "%PYTHON%" "%~dp0d64_addprg.py" "%TARGET%\disk8.d64" "%~dp0..\software\ccgms\ccgms.prg" CCGMS
+  if errorlevel 1 ( echo FAILED to put CCGMS on the disk & goto :done )
+)
 
 echo.
 echo === The original Commodore kernal, 901227-03 ===

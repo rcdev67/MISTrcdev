@@ -20,7 +20,7 @@ setlocal
 call "%~dp0paths.cmd"
 
 if not exist "%LOADER%"  ( echo MISSING: %LOADER% & goto :done )
-if not exist "%FS%"      ( echo MISSING: %FS%  -  build the core first & goto :done )
+if not exist "%FS%"      ( echo MISSING: %FS%  -  build it with ..\build_core.cmd, or fetch it with ..\..\get_binaries.cmd & goto :done )
 if not exist "%DOLPHIN%" ( echo MISSING: %DOLPHIN% & goto :done )
 if not exist "%CBM%"     ( echo MISSING: %CBM% & goto :done )
 if not exist "%BACKUP%"  mkdir "%BACKUP%"

@@ -1,7 +1,8 @@
 # A C64 on the Tang Nano 20K
 
-From nothing to `READY.` Everything needed is either in this directory or
-named here.
+From nothing to `READY.` Everything needed is in this repository, except the
+ROM images, which are not ours to hand out, and the tools, which
+[`../TOOLS.md`](../TOOLS.md) names with their exact versions.
 
 ## What you need
 
@@ -12,24 +13,28 @@ named here.
 | **HDMI display** | |
 | **microSD card** | FAT32 |
 | **Power supply** | **not** a PC — on a PC the BL616 stays a debugger and the companion does not run |
-| **Core sources** | the fork of [C64Nano](https://github.com/MiSTle-Dev/C64Nano), branch `nano20k-running`. Its path is set in [`flash/paths.cmd`](flash/paths.cmd) |
-| **Companion firmware** | the fork of [FPGA-Companion](https://github.com/MiSTle-Dev/FPGA-Companion), branch `net-download`. **The same firmware serves both the Atari ST and the C64** |
+| **The tools on the PC** | [`../TOOLS.md`](../TOOLS.md): to flash ready-made binaries only the first table, to build everything the second one too |
 
-## 1. Build the core
+The sources are in [`../sources`](../sources), pinned to the state described
+here: the core in [`sources/C64Nano`](../sources/C64Nano), our fork of
+MiSTle-Dev's C64Nano, and the companion in
+[`sources/FPGA-Companion`](../sources/FPGA-Companion). **The same companion
+serves both the Atari ST and the C64.**
+
+## 1. Build the core, or fetch it
+
+    build_core.cmd
+
+builds the core from [`../sources/C64Nano`](../sources/C64Nano) into
+`bin\c64nano.fs`, in about ten minutes. Not building?
+[`..\get_binaries.cmd`](../get_binaries.cmd) fetches the same file, and all
+the other binaries, ready-made.
 
 Gowin **1.9.11.03 Education** is enough, although the C64Nano instructions
-ask for 1.9.12.03. From the `src` directory of the core repository:
-
-    <Gowin>\IDE\bin\gw_sh.exe scripts/build.tcl
-
-The result is `src/impl/pnr/c64nano.fs` (about 7.3 MB of text) and
-`c64nano.bin` (about 890 KB binary). The build takes a few minutes and reports
-some fifty warnings; the one line matching "ERROR" in the log is the text of a
-warning about a `$error` in `sd_card.v` and is harmless.
-
-**After the build**, run `git checkout -- src/misc/c64_xml.hex` in the core
-repository: that file is generated but tracked upstream, and every build
-rewrites it.
+ask for 1.9.12.03. The build reports some fifty warnings; the one line
+matching "ERROR" in the log is the text of a warning about a `$error` in
+`sd_card.v` and is harmless. Every build rewrites `src/misc/c64_xml.hex`, a
+generated file that is tracked upstream; the script puts it back.
 
 The GW2AR-18 is **nearly full**: 97 % logic, 92 % block RAM, both PLLs in use.
 Making room for additions means taking something else out.
@@ -71,39 +76,24 @@ carries a serial number. Two Tang boards can therefore be bound differently.
 Zadig changes it, *Options → List All Devices*, and **interface 0 only**;
 Gowin's programmer then continues to work with `--cable-index 5`.
 
-Check the paths in [`flash/paths.cmd`](flash/paths.cmd) once — that is the only
-file another machine has to adjust.
+Both take the core from `bin\` and the DOS images from `flash\roms\`.
 
 **Before every programming run**: unplug the board, **hold S2**, plug it in,
 keep holding for two seconds, release. Without that the FPGA stops answering
 as soon as a core is running that uses the JTAG pins as regular IO.
 
-## 4. Build and flash the companion
+## 4. Flash the companion
 
 Only needed on a board that has no companion yet, or to pick up a change in
-the firmware. From `src/bl616` of the companion fork, with the Bouffalo SDK
-and its toolchain on the path:
+the firmware. Everything about it -- the two board revisions and how to tell
+them apart, building, flashing, the console -- is in
+[`../companion/README.md`](../companion/README.md). In short, with the board
+in **update mode** (unplug, hold `UPDATE`, plug into the PC, release):
 
-    make TANG_BOARD=nano20k          # board revision 3921
-    make TANG_BOARD=nano20k_v3923    # board revision 3923
+    ..\companion\flash_companion.cmd COM12 3921
 
-The result is `build/build_out/fpga_companion_bl616.bin`. Put it in
-[`flash/companion/`](flash/companion) as `fpga_companion_nano20k.bin`, next to
-`bl616_fpga_partner_nano20k.bin` from the maintainers' releases and the
-`flash_nano20k.ini` that names both. The binaries are not kept in this
-repository — they are built, and the Partner is not ours.
-
-Then, with the board in **update mode** (unplug, hold `UPDATE`, plug into the
-PC, release):
-
-    flash\flash_companion.cmd COM12
-
-Called without a port it lists the ports that are there. The bootloader port is
-**not** one of the board's two FTDI ports and not the console adapter either;
-it appears only in update mode.
-
-**Only the companion image is board specific.** The Partner is the same file
-for both revisions, and so is the FPGA core.
+with your port and your board revision. **Only the companion image is board
+specific**; the FPGA core is the same for both revisions.
 
 ## 5. Fill the SD card
 
@@ -178,7 +168,7 @@ card and nothing has to be mounted** — the recordings are in the bitstream.
 **They are not ours.** They are the drive sound data from the **1541 Ultimate**
 firmware by **Gideon Zweijtzer**, recorded from a real 1541 and licensed
 GPL-3.0 — the same licence as the core, which is why they can be used here. The
-original lives in the core repository under `sounds/`, beside a note recording
+original lives in [`../sources/C64Nano/sounds`](../sources/C64Nano/sounds), beside a note recording
 where it came from, and `sounds/make_hex.py` turns it into the two generated
 files the player reads.
 
@@ -249,7 +239,7 @@ well.
 ## The modem: WiFi for the C64
 
 The same add-on as on the Atari ST: an **ESP32-S3 DevKitC-1** (N16R8) running
-[our Zimodem fork](https://github.com/rcdev67/Zimodem), on the same three pins.
+our Zimodem fork in [`../sources/Zimodem`](../sources/Zimodem), on the same three pins.
 The onboard BL616 stays the companion with the USB hub.
 
 | ESP32-S3 | Tang Nano 20K | |
@@ -266,12 +256,18 @@ external dock and the keyboard disappears. **Power the S3 through its own
 switched-off Tang through pin 41, and the SD card then fails to start -- a red
 LED that looks like anything but a power-up order.
 
-**Flash the S3** with `zimodem-s3-devkitc-bluepad32.bin` from the fork's
-release `nano20k-2026-09-21`, through the "UART" socket. The other socket is the
-S3's native USB and shows up as Espressif's own `303A`; the UART one is a
-CH343, `1A86`.
+**Flash the S3** with the plain modem, through the "UART" socket. The other
+socket is the S3's native USB and shows up as Espressif's own `303A`; the UART
+one is a CH343, `1A86`.
 
-    esptool --chip esp32s3 --port COMx --baud 460800 write-flash 0x0 zimodem-s3-devkitc-bluepad32.bin
+    ..\esp32\flash_zimodem.cmd COMx
+
+The image is `bin\zimodem-s3-devkitc.bin`, from
+[`..\esp32\build_zimodem.cmd`](../esp32/build_zimodem.cmd) or
+`get_binaries.cmd`. **Take the plain one, not the Bluetooth build** (`bt`):
+with Bluetooth running the WiFi driver insists on modem sleep, and at a BBS
+every keystroke then waited up to seconds for the next wake-up. The C64 core
+does not read Bluetooth controllers yet anyway.
 
 At power-up its debug output on that socket at 115200 says
 `Using BPS 19200, RXD 15, TXD 16`. That socket carries only debug output: the
@@ -284,18 +280,20 @@ the pins instead. The UART follows the rate the terminal program sets in the
 6551.
 
 **A terminal program** that speaks SwiftLink: [CCGMS
-Future](https://github.com/mist64/ccgmsterm) (`ccgms.prg` from release v0.2,
-BSD-3-Clause -- not the EasyFlash build, which has no SwiftLink).
+Future](https://github.com/mist64/ccgmsterm), `ccgms.prg` from its release
+v0.2 -- not the EasyFlash build, which has no SwiftLink. It is BSD licensed
+and therefore here, in [`software/ccgms`](software/ccgms) with its licence,
+and `tools\fill_sdcard.cmd` puts it onto a new boot disk. For a boot disk that
+is already on the card:
 
-**Load it from the disk, not through *Storage -> PRG BASIC:*.** Started that
-way, it ran, but could neither save its settings nor read a directory -- `$`
-printed garbage, and the disk image showed afterwards that not one block had
-been written. Loaded from the disk, as on the real machine, both work. Why the
-direct start breaks it is not known yet. Put it onto the image on the PC:
+    python c64\tools\d64_addprg.py F:\disk8.d64 c64\software\ccgms\ccgms.prg CCGMS
 
-    python c64\tools\d64_addprg.py F:\disk8.d64 ccgms.prg CCGMS
-
-and then, on the C64, `LOAD"CCGMS",8` and `RUN`. At 1541 speed that takes
+**Load it from the disk**: on the C64, `LOAD"CCGMS",8` and `RUN`. Started
+through *Storage -> PRG BASIC:* instead, it used to run but could neither save
+its settings nor read a directory, because the core reset the 1541 along with
+the C64 for every PRG and the drive lost what it had not written yet. That is
+fixed, and with a disk in the drive a PRG start works too; without one it
+still does not, for a reason not found yet. At 1541 speed the load takes
 about 30 seconds: a steady whirr with a few clacks where the head changes
 track, which is what a real 1541 sounds like loading one file.
 

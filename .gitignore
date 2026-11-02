@@ -1,13 +1,18 @@
 # ROM images are not ours to publish.
-# What belongs here and where it comes from is in c64/README.md.
+# What belongs there and where it comes from is in each machine's README.md.
 c64/flash/roms/
+atarist/flash/roms/
 
 # Backups taken from a board
 c64/backup/
+atarist/backup/
 
-# Firmware images: generated from the companion fork, or the maintainers' own
-# Partner binary. Built, not kept - see c64/README.md.
-c64/flash/companion/*.bin
+# Binaries: built by the build scripts or fetched by get_binaries.cmd, never
+# kept. Their checksums are in bin.sha256.
+bin/
+
+# Where the tools are on one particular machine, see paths.cmd
+paths.local.cmd
 
 # Anything the card only needs for trying things out
 c64/sdcard/*.bin
