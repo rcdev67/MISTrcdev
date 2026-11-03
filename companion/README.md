@@ -142,7 +142,10 @@ forget all of them.
 
 **Licences.** BTstack is BlueKitchen's, free for personal, non-commercial
 use only -- see `src/btstack/LICENSE` in the companion sources; selling a
-product with it needs a licence from BlueKitchen. Realtek's patch may be
+product with it needs a licence from BlueKitchen. The P-256 maths of Low
+Energy pairing is micro-ecc, by Kenneth MacKay, which BTstack bundles:
+BSD 2-clause, its licence in `src/btstack/3rd-party/micro-ecc/LICENSE.txt`
+and in the release notes. Realtek's patch may be
 passed on as an unmodified binary; its licence is in
 `src/bl616/firmware/rtl_bt` there.
 
