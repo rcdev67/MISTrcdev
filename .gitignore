@@ -24,3 +24,6 @@ c64/sdcard/*.ini
 
 # disk8.d64 is our own generated empty image and stays in
 !c64/sdcard/disk8.d64
+
+# Python leaves these next to a script it has run
+__pycache__/

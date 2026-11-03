@@ -74,6 +74,7 @@ vendors' user interfaces. Then the guide for your machine:
 | [`atarist/`](atarist) | **Atari ST**: the guide, `build_core.cmd`, `flashlash_atarist.cmd` |
 | [`companion/`](companion) | the **BL616 companion**, shared by both machines: board revisions 3921 and 3923, `build_companion.cmd`, `flash_companion.cmd`, the console |
 | [`esp32/`](esp32) | the **WiFi modem**, an ESP32-S3 with Zimodem: `build_zimodem.cmd`, `flash_zimodem.cmd` |
+| [`server/`](server) | **stserve**, the collection on a NAS or PC for both machines' *Download...*: ZIP archives opened on the fly, menus of thirty, and a catalogue in the browser with pictures, favourites and a button that sends a game to the computer |
 | [`sources/`](sources) | the sources, as git submodules of our forks, each pinned to a tested commit |
 | [`TOOLS.md`](TOOLS.md) | the tools from outside, with exact versions and where to get them |
 | [`paths.cmd`](paths.cmd) | where the tools are; read by every script |
@@ -86,7 +87,7 @@ The sources under `sources/` are our forks of the maintainers' repositories:
 |---|---|---|---|
 | `sources/C64Nano` | [rcdev67/C64Nano](https://github.com/rcdev67/C64Nano) | `nano20k-running` | `98937de` |
 | `sources/MiSTeryNano` | [rcdev67/MiSTeryNano](https://github.com/rcdev67/MiSTeryNano) | `nano20k-running` | `6352a1c` |
-| `sources/FPGA-Companion` | [rcdev67/FPGA-Companion](https://github.com/rcdev67/FPGA-Companion) | `net-download` | `1b27446` |
+| `sources/FPGA-Companion` | [rcdev67/FPGA-Companion](https://github.com/rcdev67/FPGA-Companion) | `net-download` | `4417003` |
 | `sources/Zimodem` | [rcdev67/Zimodem](https://github.com/rcdev67/Zimodem) | `c3-supermini-misterynano` | `537d519` |
 
 In none of those forks is `main` the working branch. **Moving a pin** to a

@@ -362,13 +362,21 @@ address and a port:
     server=192.168.1.20:8888
 
 A folder works as well, `server=192.168.1.10:8888/c64/games` starts the
-list there. How to serve a folder from a PC with Python, and `stserve` for
-a whole collection on a NAS, is in the companion's
-[`DOWNLOAD.md`](../sources/FPGA-Companion/DOWNLOAD.md) and
-[`tools/stserve`](../sources/FPGA-Companion/tools/stserve). `stserve` lists
-only the ST's types unless told otherwise; for the C64 start it with
-`ST_EXT=prg,d64,t64,crt,tap` in its environment, and
-`ST_ZIP_EXT=d64` for what it takes out of archives.
+list there. How to serve a folder from a PC with Python is in the
+companion's [`DOWNLOAD.md`](../sources/FPGA-Companion/DOWNLOAD.md).
+
+**A whole collection on a NAS:** [`server/`](../server) has `stserve` and a
+compose file that runs a container of its own for the C64, on port 8889 --
+`server=<nas-ip>:8889` in `c64.ini`. It opens the ZIP archives of a
+collection while the file is fetched, names each game after the image
+inside (a `.prg` stays a `.prg`), and files thousands of games into menus
+of thirty. **In a browser**, `http://<nas-ip>:8889/_/` shows the collection
+with pictures, a search and the first letters:
+
+- **Send to the computer** puts a game at the top of every list on the
+  C64, marked `> ` -- *Reload list* and it is the first entry.
+- **The star** makes it a favourite: they are the folder `Favourites/` at
+  the top of the list.
 
 **A firewall on the PC** has to let the server through. Windows asks the
 first time; Bitdefender's firewall decides on its own, held the first
@@ -381,8 +389,10 @@ for a request, which gives the modem to the companion's port 1, and back
 to your setting afterwards. *Netz* is in the list only so it can do that.
 
 In the *Download* window **Return fetches the marked file again**; leave it
-with **Esc**. The list is fetched once and kept until the next power on: a
-file put on the server later shows up after that.
+with **Esc**. The list is fetched once per folder: **Reload list**, its
+first line, fetches it again, for a file put on the server meanwhile or a
+game sent from the browser. A typed letter goes to the first entry starting
+with it.
 
 **Slower than on the ST.** The C64 core has no block RAM left, so the
 port's buffers are 15 bytes in distributed RAM instead of the ST's 255. At

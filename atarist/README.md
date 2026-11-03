@@ -184,8 +184,8 @@ goes back up. A folder in the `server=` line works too, so
 `server=192.168.1.20:8888/atari/games` starts the list there.
 
 **A whole collection.** For more than a handful of images there is
-[stserve](../sources/FPGA-Companion/tools/stserve)
-in the companion sources: a small server for a NAS or the PC. It opens ZIP
+[stserve](../server)
+in [`server/`](../server): a small server for a NAS or the PC. It opens ZIP
 archives while the file is fetched, so a TOSEC set can stay exactly as it
 is; it shortens `Arkanoid (1987)(Taito)(M4).zip` to `Arkanoid.ST`; and it
 files long folders by letter, so a game is three or four turns of the
