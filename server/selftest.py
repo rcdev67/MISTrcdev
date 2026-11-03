@@ -105,8 +105,10 @@ def main():
     check(head.get("Transfer-Encoding") is None, "not chunked")
     check(clen is not None and int(clen) == len(body),
           "Content-Length matches the body", "%s vs %d" % (clen, len(body)))
-    check(len(body) % 512 == 0, "size is a whole number of sectors",
-          "%d bytes = %d sectors" % (len(body), len(body) // 512))
+    # an ST image is sectors; a C64 .g64 is tracks, a .prg any length
+    if last_file.rsplit(".", 1)[-1].lower() in ("st", "msa", "dim", "img"):
+        check(len(body) % 512 == 0, "size is a whole number of sectors",
+              "%d bytes = %d sectors" % (len(body), len(body) // 512))
 
     # --- and the same bytes as in the archive
     name = urllib.parse.unquote(last_file.rsplit("/", 1)[-1])

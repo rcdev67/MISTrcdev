@@ -46,6 +46,32 @@ it runs, whatever line endings git gave the file; nothing to do by hand. The
 SDK brings its own `make`, `ninja` and `cmake` (3.25.1), and the script uses
 those.
 
+## For a C64 collection of NIB disks
+
+Only for [`server/nib2g64.py`](server/nib2g64.py), which turns a collection
+of `.nib` disks into `.g64` the C64 core can load -- a No-Intro
+"Commodore 64 (PP)" set is one. It runs **nibconv** from nibtools on every
+disk.
+
+| Tool | Version | Where from |
+|---|---|---|
+| **nibtools**, its `nibconv` | commit **`0abdc11`** | <https://github.com/rittwage/nibtools>, built from source: no binary of it is fetched |
+| a **C compiler** for Windows | gcc 13.2.0 (MinGW-w64, UCRT) was used; any MinGW gcc will do | for instance the one in Strawberry Perl, `C:\Strawberry\c\bin\gcc.exe` |
+| **Python 3** | 3.10 or later | <https://www.python.org/downloads/> |
+
+Built in the nibtools folder:
+
+    git clone https://github.com/rittwage/nibtools.git
+    cd nibtools
+    gcc -O2 -std=c99 -D WIN32 -I include/WINDOWS/ -o nibconv.exe nibconv.c gcr.c prot.c fileio.c crc.c md5.c lz.c
+
+Then, with the collection read and a new folder written:
+
+    python server\nib2g64.py \\nas\games\c64 \\nas\games\c64-g64 nibtools\nibconv.exe
+
+nibtools is Pete Rittwage's, copyrighted, and free to use; see its
+`readme.txt`.
+
 ## The board's USB drivers
 
 The Tang Nano 20K shows up as an FTDI device with two interfaces. Windows

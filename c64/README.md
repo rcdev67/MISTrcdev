@@ -367,7 +367,9 @@ companion's [`DOWNLOAD.md`](../sources/FPGA-Companion/DOWNLOAD.md).
 
 **A whole collection on a NAS:** [`server/`](../server) has `stserve` and a
 compose file that runs a container of its own for the C64, on port 8889 --
-`server=<nas-ip>:8889` in `c64.ini`. It opens the ZIP archives of a
+`server=<nas-ip>:8889` in `c64.ini`. A collection of `.nib` disks, as in a
+No-Intro set, is converted to `.g64` once with `server/nib2g64.py`; the
+core loads `.d64` and `.g64`, not `.nib`. It opens the ZIP archives of a
 collection while the file is fetched, names each game after the image
 inside (a `.prg` stays a `.prg`), and files thousands of games into menus
 of thirty. **In a browser**, `http://<nas-ip>:8889/_/` shows the collection

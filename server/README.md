@@ -107,10 +107,30 @@ the C64's SD card:
     server=192.168.1.10:8889
 
 What is different from the ST is all in its environment: the endings the
-C64 core loads (`ST_EXT=d64,g64,prg,t64,crt,tap`), `ST_SYSTEM=Commodore -
+C64 core loads (`ST_EXT=d64,g64,prg,crt,tap`), `ST_SYSTEM=Commodore -
 64` for the pictures, and `ST_ZIP_EXT=*`, which names a game in an archive
 after the image inside: a `.prg` arrives on the card as a `.prg`, a cartridge
 as a `.crt`, and the OSD loads each the way it should.
+
+**A collection of `.nib` disks** -- a No-Intro "Commodore 64 (PP)" set, the
+raw reads of the original disks -- is nothing the core can load, and
+stserve leaves those archives out. `nib2g64.py` turns it into `.g64` once,
+in a folder of its own, with nibtools' `nibconv`; the collection itself is
+only read:
+
+    python nib2g64.py \\nas\games\c64 \\nas\games\c64-g64 nibconv.exe
+
+Every side of a disk set becomes a file of its own, served as `_s1`,
+`_s2`. Point the C64's container at the new folder. How to build nibconv
+is in [`../TOOLS.md`](../TOOLS.md).
+
+## A scraper's gamelist.xml
+
+A folder an EmulationStation scraper has been through holds a
+`gamelist.xml` and the pictures in `images/`. Where there is one, the
+catalogue takes its names, descriptions, publishers, genres and pictures
+(`image` as the screenshot, `thumbnail` as the box, `marquee` as the logo),
+and libretro only fills in what it lacks. `nib2g64.py` copies both along.
 
 **Docker without Container Manager**, same thing from a shell:
 

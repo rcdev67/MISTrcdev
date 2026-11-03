@@ -84,7 +84,7 @@ BLOCK = 64 * 1024
 # two entries apart.
 _BRACKETS = re.compile(r"[\(\[][^\)\]]*[\)\]]")
 _DISK = re.compile(r"\(disk (\d+)(?: of \d+)?\)", re.I)
-_SIDE = re.compile(r"\(side ([ab])\)", re.I)
+_SIDE = re.compile(r"\(side ([ab]|\d{1,2})\)", re.I)
 _ALT = re.compile(r"\[(a\d*|b\d*)\]", re.I)
 _ARTICLE = re.compile(r",\s*(the|a|an|der|die|das|le|la|les|el)\s*$", re.I)
 _UNSAFE = re.compile(r"[^A-Za-z0-9_-]+")
@@ -461,11 +461,17 @@ def buckets(entries, depth=1):
 # a page shows them and kept in ST_CACHE, never in the collection. Without
 # a writable ST_CACHE there are no pictures and no list of sent games kept
 # over a restart; everything else works the same.
+#
+# A collection an EmulationStation scraper has been through brings its own:
+# gamelist.xml with names, descriptions, publishers and genres, and the
+# pictures in images/. Where a folder has one, its entries win, and
+# libretro only fills in what it lacks.
 
 import hashlib
 import json
 import threading
 import urllib.request
+import xml.etree.ElementTree as ET
 
 CACHE = env("ST_CACHE", "")
 # the system's name at libretro: "Atari - ST", "Commodore - 64"
@@ -498,7 +504,8 @@ _GROUP = re.compile(r"\(([^\)]*)\)")
 def tosec(stem):
     """Title, year, publisher and the remaining marks of a TOSEC name."""
     m = _TOSEC.match(stem)
-    title = m.group("title").strip()
+    # "Impossible_Mission_(REM)": some collections write blanks as _
+    title = re.sub(r"\s+", " ", m.group("title").replace("_", " ")).strip()
     rest = m.group("rest")
     m = _ARTICLE.search(title)
     if m:   # "Pyramid, The" reads "The Pyramid"
@@ -529,9 +536,43 @@ def norm(title):
     return re.sub(r"[^a-z0-9]+", "", t.lower())
 
 
+# what EmulationStation's scraper calls each picture, in our words
+GAMELIST_PICS = {"snap": "image", "box": "thumbnail", "logo": "marquee"}
+_SIDE_MARKS = re.compile(r"\s*\((side|disk) [^\)]*\)", re.I)
+
+
+def gamelist(folder):
+    """A folder's gamelist.xml as {file stem: what it says}, {} without one."""
+    path = os.path.join(folder, "gamelist.xml")
+    try:
+        root = ET.parse(path).getroot()
+    except (OSError, ET.ParseError):
+        return {}
+    out = {}
+    for g in root.iter("game"):
+        rel = (g.findtext("path") or "").strip()
+        if not rel:
+            continue
+        stem = os.path.basename(rel).rsplit(".", 1)[0]
+        meta = {k: (g.findtext(k) or "").strip()
+                for k in ("name", "desc", "releasedate", "developer", "publisher",
+                          "genre", "players")}
+        pics = {}
+        for kind, tag in GAMELIST_PICS.items():
+            v = (g.findtext(tag) or "").strip()
+            if v:
+                full = os.path.normpath(os.path.join(folder, v))
+                if full.startswith(ROOT) and os.path.isfile(full):
+                    pics[kind] = full
+        meta["pics"] = pics
+        out[stem] = meta
+    return out
+
+
 class Game:
     __slots__ = ("id", "title", "year", "publisher", "marks", "folder",
-                 "real", "_name", "ext", "key", "stem")
+                 "real", "_name", "ext", "key", "stem", "desc", "genre",
+                 "players", "pics")
 
     @property
     def name(self):
@@ -553,7 +594,9 @@ class Game:
     def to_json(self):
         return {"id": self.id, "title": self.title, "year": self.year,
                 "publisher": self.publisher, "marks": self.marks,
-                "folder": self.folder, "name": self.name}
+                "folder": self.folder, "name": self.name,
+                "genre": self.genre, "players": self.players,
+                "desc": self.desc[:2000]}
 
 
 class Catalogue:
@@ -582,6 +625,7 @@ class Catalogue:
                                  if not d.startswith(".") and not hidden(d, os.path.join(top, d)))
                 rel_top = os.path.relpath(top, ROOT)
                 folder = "" if rel_top == "." else rel_top.replace(os.sep, "/")
+                meta_of = gamelist(top) if "gamelist.xml" in files else {}
                 for f in files:
                     if f.startswith(".") or hidden(f, os.path.join(top, f)):
                         continue
@@ -594,6 +638,19 @@ class Catalogue:
                     g.ext = ext
                     g.title, g.year, g.publisher, g.marks = tosec(g.stem)
                     g.folder = folder
+                    g.desc = g.genre = g.players = ""
+                    g.pics = {}
+                    # a scraper's entry for it, also for one side of a disk set
+                    m = meta_of.get(g.stem) or meta_of.get(_SIDE_MARKS.sub("", g.stem))
+                    if m:
+                        # a name that is only the file's says nothing new
+                        if m["name"] and m["name"] != g.stem:
+                            g.title = m["name"]
+                        if m["releasedate"][:4].isdigit():
+                            g.year = m["releasedate"][:4]
+                        g.publisher = m["publisher"] or m["developer"] or g.publisher
+                        g.desc, g.genre, g.players = m["desc"], m["genre"], m["players"]
+                        g.pics = m["pics"]
                     g._name = None      # worked out when it is shown
                     g.key = norm(g.title)
                     rel = (folder + "/" + f) if folder else f
@@ -700,7 +757,22 @@ thumbs = {k: Thumbs(k) for k in THUMB_KINDS}
 
 
 def picture(g, kind):
-    """The picture's bytes, from the cache or fetched into it; None if none."""
+    """(bytes, type) of a picture: the collection's own, or libretro's from
+    the cache or fetched into it; None if there is none."""
+    own = g.pics.get(kind)
+    if own:
+        try:
+            with open(own, "rb") as f:
+                data = f.read()
+            return data, "image/jpeg" if own.lower().endswith((".jpg", ".jpeg")) else "image/png"
+        except OSError:
+            pass
+    data = libretro_picture(g, kind)
+    return (data, "image/png") if data else None
+
+
+def libretro_picture(g, kind):
+    """libretro's picture's bytes, from the cache or fetched into it."""
     d = cache_dir("thumbs", SYSTEM, kind)
     if not d:
         return None
@@ -923,6 +995,7 @@ main { padding:16px; }
 #detail .box { background:var(--panel); border-radius:10px; max-width:760px; width:100%; padding:16px; }
 #detail h2 { margin:0 0 4px; font-size:20px; }
 #detail .facts { color:var(--dim); margin-bottom:12px; }
+#detail .desc { white-space:pre-line; margin:0 0 12px; max-height:240px; overflow:auto; }
 #detail .pics { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
 #detail .pics img { max-width:calc(50% - 4px); max-height:260px; border-radius:4px; background:#000; }
 #detail button { padding:9px 16px; font:inherit; cursor:pointer; border-radius:6px; border:0; }
@@ -945,6 +1018,7 @@ main { padding:16px; }
 <div id="detail"><div class="box">
   <h2 id="dt"></h2><div class="facts" id="df"></div>
   <div class="pics" id="dp"></div>
+  <p class="desc" id="dd"></p>
   <button id="send">Send to the computer</button><button id="fav"></button><button id="close">Close</button>
   <div id="hint"></div>
 </div></div>
@@ -1026,8 +1100,9 @@ function load(reset) {
 function show(g) {
   current = g;
   $("dt").textContent = g.title;
-  $("df").textContent = [line(g), (g.folder ? g.folder + " · " : "") + "on the card as " + g.name]
+  $("df").textContent = [line(g), [g.genre, g.players ? g.players + " players" : ""].filter(x => x).join(", "), (g.folder ? g.folder + " · " : "") + "on the card as " + g.name]
                         .filter(x => x).join("  —  ");
+  $("dd").textContent = g.desc || "";
   $("dp").innerHTML = "";
   ["box", "title", "snap", "logo"].forEach(k => {
     const i = new Image(); i.alt = k; i.onerror = () => i.remove();
@@ -1244,10 +1319,10 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_data(json.dumps(data).encode(), "application/json", body)
         if parts[1:2] == ["img"] and len(parts) == 4 and parts[3] in THUMB_KINDS:
             g = catalogue.find(parts[2])
-            data = picture(g, parts[3]) if g else None
-            if not data:
+            pic = picture(g, parts[3]) if g else None
+            if not pic:
                 return self.fail(404, "Not Found")
-            return self.send_data(data, "image/png", body, cache=True)
+            return self.send_data(pic[0], pic[1], body, cache=True)
         return self.fail(404, "Not Found")
 
     def serve(self, body):

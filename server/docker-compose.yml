@@ -55,7 +55,7 @@ services:
     restart: unless-stopped
 
     volumes:
-      - /volume1/games/c64:/games:ro      # <-- your collection
+      - /volume1/games/c64-g64:/games:ro  # <-- your collection, as .g64, see nib2g64.py
       - ./stserve.py:/stserve.py:ro
       - ./cache-c64:/cache                # pictures and sent games
 
@@ -71,7 +71,7 @@ services:
       # What the C64 core loads: disk and tape images, programs, cartridges.
       # "*": an archive is named after the image inside, so a .prg in a
       # .zip arrives on the card as a .prg and the OSD loads it as one.
-      ST_EXT: "d64,g64,prg,t64,crt,tap"
+      ST_EXT: "d64,g64,prg,crt,tap"
       ST_ZIP_EXT: "*"
       ST_MAX_ENTRIES: "30"
 
