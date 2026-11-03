@@ -89,11 +89,19 @@ video standard in the C64 core, where writing it cold boots the machine. A
 core that declares no `netport` gets no net task at all — that is deliberate,
 and it is how this degrades safely.
 
+The bit rate of port 1 is set by the companion through the variable `N`,
+0 = 19200 up to 4 = 460800; the core has to give that id to nothing else.
+
+**Both cores have it.** The ST with a second UART on the M0S pins; the C64
+shares its one external UART: *RS232 port: Netz* (value 4) hands it from
+the 6551 to port 1, with two 15-byte FIFOs in `net_port.v`, and `N` is the
+MIDI mode there, free since MIDI was taken out to make room.
+
 ## 4. Optional, and safe to leave out
 
 | | |
 |---|---|
-| **255-byte FIFOs, 460800 baud** on the companion port | only speed; smaller works, slower works |
+| **255-byte FIFOs, 460800 baud** on the companion port | only speed: the companion tells the size from the space an empty FIFO reports, and transfers at 460800 with 255 bytes, at 38400 with fewer. Measured on the C64's 15: at 460800 one transfer in three failed, at 115200 three in seven, at 38400 none |
 | **System command 32**, the running ROM version | the OSD title shows it; absent means no title extra |
 | **Drive sounds** (`drive_sound.v`, the samples) | entirely core-side, the companion knows nothing about it |
 | **A joystick over a serial line** | core-side, independent |

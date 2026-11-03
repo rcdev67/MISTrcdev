@@ -347,6 +347,53 @@ it arrives:
     +++                         with a second's pause either side: command mode
     ath                         hangs up
 
+## Programs from the server
+
+The companion fetches files from a web server on your network through the
+same modem and puts them on the SD card -- what it does for our Atari ST.
+**Shift+F12**, *Download...*, *Load file list*, pick a file. It lands in the
+root of the card, and **F12** loads it from there like any other: a PRG
+under *Storage*, a disk image into the drive.
+
+**What it needs:** the modem in its WiFi, as above, and the server's address
+in **`c64.ini`** in the root of the card, one line, with your PC's or NAS's
+address and a port:
+
+    server=192.168.1.20:8888
+
+A folder works as well, `server=192.168.1.10:8888/c64/games` starts the
+list there. How to serve a folder from a PC with Python, and `stserve` for
+a whole collection on a NAS, is in the companion's
+[`DOWNLOAD.md`](../sources/FPGA-Companion/DOWNLOAD.md) and
+[`tools/stserve`](../sources/FPGA-Companion/tools/stserve). `stserve` lists
+only the ST's types unless told otherwise; for the C64 start it with
+`ST_EXT=prg,d64,t64,crt,tap` in its environment, and
+`ST_ZIP_EXT=d64` for what it takes out of archives.
+
+**A firewall on the PC** has to let the server through. Windows asks the
+first time; Bitdefender's firewall decides on its own, held the first
+request back, and let the next one through without a word. If the list
+fails with *Modem could not fetch* while the modem has its address, look
+there first.
+
+**Leave *RS232 port* on *6551 Ext.*** The companion switches it to *Netz*
+for a request, which gives the modem to the companion's port 1, and back
+to your setting afterwards. *Netz* is in the list only so it can do that.
+
+In the *Download* window **Return fetches the marked file again**; leave it
+with **Esc**. The list is fetched once and kept until the next power on: a
+file put on the server later shows up after that.
+
+**Slower than on the ST.** The C64 core has no block RAM left, so the
+port's buffers are 15 bytes in distributed RAM instead of the ST's 255. At
+the ST's 460800 baud one transfer in three failed, at 115200 three in
+seven; the companion sees the small buffers and transfers at 38400: a 30 KB
+program in about 8 seconds, a full disk image in under a minute. To make
+room, the core has no MIDI interface any more.
+
+Every download is written to `NETLOG.TXT` in the root of the card; when one
+fails, that line says why.
+
 ## Reading the LEDs
 
 Without this table you are guessing. Both halves come from the sources, not
