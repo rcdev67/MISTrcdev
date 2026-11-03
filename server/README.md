@@ -124,6 +124,13 @@ Every side of a disk set becomes a file of its own, served as `_s1`,
 `_s2`. Point the C64's container at the new folder. How to build nibconv
 is in [`../TOOLS.md`](../TOOLS.md).
 
+**Every `.g64` comes out at least 333744 bytes long**, with zeros at the
+end. The core tells a G64 from a D64 by its size alone, and nibconv writes
+them shorter: 2467 of 2478 disks of a No-Intro set were. Such a disk is
+read as a D64 and the C64 hangs at `LOAD`. A folder converted before this
+is put right by running the script over it once more; nothing is
+converted twice.
+
 ## A scraper's gamelist.xml
 
 A folder an EmulationStation scraper has been through holds a

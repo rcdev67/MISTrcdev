@@ -419,6 +419,25 @@ the original did.
 Every download is written to `NETLOG.TXT` in the root of the card; when one
 fails, that line says why.
 
+## Programs from a USB stick
+
+For games on a stick and no server. Plug the stick into the hub; the OSD
+says *USB stick found, reading it ...* and then *The USB stick is ready*.
+**Shift+F12**, *From USB*, pick a file: it is copied into the root of the
+SD card, and **F12** loads it from there, as a download. The core's floppy
+reads a disk image straight from the SD card, so a disk on the stick has
+to be on the card first.
+
+**The stick has to be FAT32**, one partition, MBR -- what Windows' *Format*
+gives a stick up to 32 GB. NTFS is not read, and neither is a stick
+written as an installer from an ISO image; the OSD then shows nothing
+after *reading it*.
+
+`.g64` files from `server/nib2g64.py` are fine; one converted elsewhere and
+shorter than 333744 bytes is taken for a `.d64` by the core and the C64
+hangs at `LOAD` -- `nib2g64.py` makes them long enough, see
+[`server/`](../server).
+
 ## Reading the LEDs
 
 Without this table you are guessing. Both halves come from the sources, not

@@ -23,6 +23,13 @@ git checked it out -- are kept as they are.
    of the endpoint's packet size, 16 bytes, so the last piece of such an
    event reaches byte 273. At 256 that wrote past the buffer.
 
+4. components/usb/cherryusb/class/msc/usbh_msc.c: a USB stick is asked who
+   it is (INQUIRY) before whether it is ready, as Windows and Linux do, the
+   readiness questions get 100 ms apart, and a "not ready" is explained in
+   the log by the stick's own sense code. A stick with a Chipsbank
+   controller (1e3d:198a) said "not ready" 121 times within three seconds
+   when asked the other way round, and was never mounted.
+
 Usage: python sdk_fixes.py <path of the Bouffalo SDK>
 """
 import os
@@ -102,11 +109,47 @@ def hci_buffers(text):
     return text
 
 
+MSC_OLD = """    cnt = 0;
+    while (usbh_msc_scsi_testunitready(msc_class) < 0) {
+        USB_LOG_WRN("Device not ready, try again...\\r\\n");
+        ret = usbh_msc_scsi_requestsense(msc_class);
+        if (ret < 0) {
+            USB_LOG_ERR("Fail to scsi_testunitready\\r\\n");
+        }
+        cnt++;
+"""
+MSC_NEW = """    cnt = 0;
+    /* who it is first, as Windows and Linux ask: some sticks stay "not
+       ready" until they have been asked that (sdk_fixes.py) */
+    (void)usbh_msc_scsi_inquiry(msc_class);
+    while (usbh_msc_scsi_testunitready(msc_class) < 0) {
+        ret = usbh_msc_scsi_requestsense(msc_class);
+        if (ret < 0) {
+            USB_LOG_ERR("Fail to scsi_testunitready\\r\\n");
+        } else {
+            uint8_t *sense = g_msc_buf[msc_class->sdchar - 'a'];
+            USB_LOG_WRN("Device not ready, sense %x/%02x/%02x, try again...\\r\\n",
+                        sense[2] & 0x0f, sense[12], sense[13]);
+        }
+        usb_osal_msleep(100);
+        cnt++;
+"""
+
+
+def msc_ready(text):
+    if MSC_NEW in text:
+        return None
+    if text.count(MSC_OLD) != 1:
+        raise SystemExit('usbh_msc.c does not look like the one in SDK v2.3.33')
+    return text.replace(MSC_OLD, MSC_NEW)
+
+
 def main():
     sdk = sys.argv[1]
     for rel, fix in (('cmake/compiler_flags.cmake', no_lto),
                      ('components/usb/cherryusb/core/usbh_core.c', skip_altsettings),
-                     ('components/usb/cherryusb/class/wireless/usbh_bluetooth.c', hci_buffers)):
+                     ('components/usb/cherryusb/class/wireless/usbh_bluetooth.c', hci_buffers),
+                     ('components/usb/cherryusb/class/msc/usbh_msc.c', msc_ready)):
         path = os.path.join(sdk, rel)
         if not os.path.exists(path):
             raise SystemExit('missing: ' + path)

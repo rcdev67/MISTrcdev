@@ -16,6 +16,8 @@ whole collection:
   * gamelist.xml and images/, an EmulationStation scraper's names,
     descriptions and pictures, are copied, so stserve's catalogue shows
     them.
+  * Every .g64 in the new folder is made at least 333744 bytes long, see
+    G64_MIN below.
   * The collection is only read. What is done already is skipped, so the
     script can be stopped and started again. What failed is listed in
     nib2g64.log in the new folder.
@@ -39,6 +41,13 @@ KEEP_DIRS = {"images"}
 
 log_lock = threading.Lock()
 
+# The C64 core tells a G64 from a D64 by its size alone: from 333744 bytes,
+# 42 tracks of 7928 bytes, it is a G64. nibconv writes them shorter, only
+# as long as the tracks on the disk, and the core then reads one as a D64
+# and the C64 hangs at LOAD. Zeros at the end change nothing else: the
+# core finds every track through the table at the start of the file.
+G64_MIN = 333744
+
 
 def ext_of(name):
     return name.rsplit(".", 1)[-1].lower() if "." in name else ""
@@ -48,6 +57,17 @@ def log(target, line):
     with log_lock:
         with open(os.path.join(target, "nib2g64.log"), "a", encoding="utf-8") as f:
             f.write(time.strftime("%Y-%m-%d %H:%M:%S ") + line + "\n")
+
+
+def pad_g64(path):
+    """Zeros at the end of a G64 shorter than G64_MIN. True if it was."""
+    size = os.path.getsize(path)
+    if size >= G64_MIN:
+        return False
+    with open(path, "r+b") as f:
+        f.seek(size)
+        f.write(bytes(G64_MIN - size))
+    return True
 
 
 def convert(nibconv, nib_path, g64_path):
@@ -62,6 +82,7 @@ def convert(nibconv, nib_path, g64_path):
             pass
         tail = r.stdout.decode("latin-1", "replace").strip().splitlines()[-1:] or [""]
         return "nibconv failed (%d): %s" % (r.returncode, tail[0])
+    pad_g64(tmp)
     os.replace(tmp, g64_path)
     return ""
 
@@ -159,7 +180,13 @@ def main(argv):
                 sys.stdout.write("%d/%d archives, %d disks converted, %d there already, %d failed, %d s\n"
                                  % (k, len(jobs), done, skipped, failed, time.time() - t0))
                 sys.stdout.flush()
-    log(target, "done: %d converted, %d there already, %d failed" % (done, skipped, failed))
+    # a G64 copied as it was, or converted before the padding was there
+    padded = sum(pad_g64(os.path.join(target, n)) for n in os.listdir(target)
+                 if ext_of(n) == "g64")
+    if padded:
+        sys.stdout.write("%d G64 made %d bytes long\n" % (padded, G64_MIN))
+    log(target, "done: %d converted, %d there already, %d failed, %d padded"
+        % (done, skipped, failed, padded))
     return 0 if not failed else 2
 
 
