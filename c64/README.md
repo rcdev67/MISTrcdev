@@ -246,14 +246,16 @@ keys. Those stay where the US mapping puts them, which leaves `@` next to P and
 `/` with `?` to the sharp-s key, whose shift is `?` on a German keyboard as
 well.
 
-## A Bluetooth keyboard
+## Bluetooth keyboards and controllers
 
-A Bluetooth keyboard works through a USB Bluetooth adapter on the hub; the
-companion pairs it and passes its keys on like a USB keyboard's. Tested on a
+Bluetooth keyboards and controllers work through a USB Bluetooth adapter on
+the hub; the companion pairs them and passes them on like USB devices. Tested on a
 Realtek RTL8761B adapter: a Logitech K380 (classic Bluetooth) and a ROG
-Azoth X (Bluetooth Low Energy), also both at once. Which adapters, how to pair,
-and where the pairing is kept: [`../companion/README.md`](../companion/README.md),
-*Bluetooth keyboards*.
+Azoth X (Bluetooth Low Energy), and an Xbox Series controller as the
+joystick, all three at once. Up to four devices: a keyboard, a mouse and
+two controllers. Which adapters, how to pair, and where the pairings are
+kept: [`../companion/README.md`](../companion/README.md), *Bluetooth
+keyboards and controllers*.
 
 ## The modem: WiFi for the C64
 

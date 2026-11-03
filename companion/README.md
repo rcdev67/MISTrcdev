@@ -97,20 +97,28 @@ The two ports the board shows when it is plugged in **normally** -- two
 `USB Serial Port` entries of its debugger -- are **not** the one: they are
 for flashing the FPGA, not the BL616.
 
-## Bluetooth keyboards
+## Bluetooth keyboards and controllers
 
-A Bluetooth keyboard works through a **USB Bluetooth adapter on the hub**.
+Bluetooth keyboards, mice and controllers work through a **USB Bluetooth
+adapter on the hub**.
 The BL616's own radio has no antenna on the Tang Nano 20K, so the adapter
 does the radio, and the companion runs the Bluetooth stack: BTstack, as a
-host for keyboards that speak classic Bluetooth and for those that speak
-only Bluetooth Low Energy. Keys arrive at the core exactly as from a USB
-keyboard, so it works for the C64 and the Atari ST alike, the German layout
-included. Two keyboards can be connected at the same time, and both type.
+host for devices that speak classic Bluetooth and for those that speak
+only Bluetooth Low Energy. Keys and joystick moves arrive at the core
+exactly as from USB, so it works for the C64 and the Atari ST alike, the
+German layout included.
+
+**Up to four devices at once**: a keyboard, a mouse and two controllers,
+as much as a computer of that time needs. More can go on USB. The four
+are what the companion's memory holds with room to spare; a fifth is
+refused, and the console says why.
 
 | | |
 |---|---|
 | **Adapter, tested** | Realtek RTL8761B, sold as "Bluetooth 5.0 Adapter", USB `0bda:8771` |
 | **Keyboards, tested** | Logitech K380 (classic Bluetooth), ROG Azoth X in its Bluetooth mode (Low Energy only) |
+| **Controller, tested** | Xbox Series controller (Low Energy); all three at once |
+| **Mouse** | supported, not tested |
 
 **The Realtek chip needs a firmware patch** every time it is plugged in;
 without it, it answers but its radio finds nothing. The companion carries
@@ -127,13 +135,17 @@ later it can type. A K380 drops once about ten seconds after its very first
 pairing and comes back by itself ten seconds later; that is the keyboard.
 
 A Low Energy keyboard pairs the same way: its Bluetooth pairing mode, as its
-manual describes it, while the companion searches.
+manual describes it, while the companion searches. An **Xbox controller**:
+switch it on with the Xbox button, hold the small pair button on its top
+edge until the Xbox button blinks fast, then **Shift+F12**, *Scan
+Bluetooth*. It arrives as the first USB joystick: in the core's OSD, set
+the joystick port to *USB Joy 1*, as for a controller on USB.
 
-**After that** it reconnects by itself at every power on: press any key to
-wake it. A keyboard switched off, or to another channel or its own
-receiver, drops out; the other one keeps typing, and switched back it
-reconnects without pairing again. To pair another one, **Shift+F12**,
-*Scan Bluetooth*, and put it into pairing mode.
+**After that** each one reconnects by itself at every power on: press any
+key, or the Xbox button, to wake it. A device switched off, or to another
+channel or its own receiver, drops out; the others keep working, and
+switched back it reconnects without pairing again. To pair another one,
+**Shift+F12**, *Scan Bluetooth*, and put it into pairing mode.
 
 The pairings are kept in the root of the SD card. **`bluetooth.txt`** has
 the classic ones, one line per device; delete a line to forget that
