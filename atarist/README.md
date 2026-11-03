@@ -72,7 +72,12 @@ recorded place and route options.
    same way. Then wire it as in section 3.
 6. **The SD card** holds your disk images (`.ST`), hard disk images and
    the settings file `atarist.ini`, which the companion writes when you
-   choose `Save settings`.
+   choose `Save settings`. A new card, formatted FAT32 on the PC, gets
+   its start with [`make_sdcard.py`](make_sdcard.py): an `atarist.ini`
+   with your server and time zone, and two empty, formatted 720 KB disks
+   for drive A and B.
+
+       python make_sdcard.py E:\ 192.168.1.20:8888
 7. **Power and wiring**, see the next section. Then switch on, press F12.
 
 The C64 uses the same address for its core: **one core at a time**. The ROMs
