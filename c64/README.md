@@ -246,6 +246,14 @@ keys. Those stay where the US mapping puts them, which leaves `@` next to P and
 `/` with `?` to the sharp-s key, whose shift is `?` on a German keyboard as
 well.
 
+## A Bluetooth keyboard
+
+A Bluetooth keyboard works through a USB Bluetooth adapter on the hub; the
+companion pairs it and passes its keys on like a USB keyboard's. Tested: a
+Logitech K380 on a Realtek RTL8761B adapter. Which adapters, how to pair,
+and where the pairing is kept: [`../companion/README.md`](../companion/README.md),
+*Bluetooth keyboards*.
+
 ## The modem: WiFi for the C64
 
 The same add-on as on the Atari ST: an **ESP32-S3 DevKitC-1** (N16R8) running

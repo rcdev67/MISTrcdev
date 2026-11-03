@@ -97,6 +97,46 @@ The two ports the board shows when it is plugged in **normally** -- two
 `USB Serial Port` entries of its debugger -- are **not** the one: they are
 for flashing the FPGA, not the BL616.
 
+## Bluetooth keyboards
+
+A Bluetooth keyboard works through a **USB Bluetooth adapter on the hub**.
+The BL616's own radio has no antenna on the Tang Nano 20K, so the adapter
+does the radio, and the companion runs the Bluetooth stack: BTstack, as a
+host for keyboards that speak classic Bluetooth. Keys arrive at the core
+exactly as from a USB keyboard, so it works for the C64 and the Atari ST
+alike, the German layout included.
+
+| | |
+|---|---|
+| **Adapter, tested** | Realtek RTL8761B, sold as "Bluetooth 5.0 Adapter", USB `0bda:8771` |
+| **Keyboard, tested** | Logitech K380 |
+| **Not yet** | keyboards that speak only Bluetooth Low Energy |
+
+**The Realtek chip needs a firmware patch** every time it is plugged in;
+without it, it answers but its radio finds nothing. The companion carries
+Realtek's patch in its own firmware and loads it into the adapter by
+itself, as Windows and Linux do -- no file on the card, no network. Other
+adapters that need no patch may work as they are; untested.
+
+**Pairing, the first time.** With the adapter in the hub and nothing paired
+yet, the companion searches for about 38 seconds right after power on. Put
+the keyboard into pairing mode then -- on the K380, hold one of the three
+channel keys for three seconds, until its light blinks fast. It pairs
+without a PIN, the OSD says "A device has been connected", and a moment
+later it can type. A K380 drops once about ten seconds after its very first
+pairing and comes back by itself ten seconds later; that is the keyboard.
+
+**After that** it reconnects by itself at every power on: press any key to
+wake it. The pairing is in **`bluetooth.txt`** in the root of the SD card,
+one line per device; delete a line to forget that device. To pair another
+one, **Shift+F12**, *Scan Bluetooth*, and put it into pairing mode.
+
+**Licences.** BTstack is BlueKitchen's, free for personal, non-commercial
+use only -- see `src/btstack/LICENSE` in the companion sources; selling a
+product with it needs a licence from BlueKitchen. Realtek's patch may be
+passed on as an unmodified binary; its licence is in
+`src/bl616/firmware/rtl_bt` there.
+
 ## The console
 
 The cores pass the BL616's debug console to **pin 48** of the right pin

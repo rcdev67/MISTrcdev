@@ -16,6 +16,13 @@ git checked it out -- are kept as they are.
    uses; raising the limit to six would cost RAM for every port of every hub
    the companion can track, about 160 KB, and the BL616 has 60 KB to spare.
 
+3. components/usb/cherryusb/class/wireless/usbh_bluetooth.c: the buffers
+   for HCI commands and events grow from 256 to 288 bytes. An event can be
+   258 bytes with its type -- an extended inquiry result, which a keyboard
+   sends while it is being searched for -- and the driver reads in pieces
+   of the endpoint's packet size, 16 bytes, so the last piece of such an
+   event reaches byte 273. At 256 that wrote past the buffer.
+
 Usage: python sdk_fixes.py <path of the Bouffalo SDK>
 """
 import os
@@ -81,10 +88,25 @@ def skip_altsettings(text):
     return text.replace(ALT_OLD, ALT_NEW).replace(EP_OLD, EP_NEW).replace(VAR_OLD, VAR_NEW)
 
 
+HCI_BUFS = ('g_bluetooth_cmd_buf[USB_ALIGN_UP(256, CONFIG_USB_ALIGN_SIZE)]',
+            'g_bluetooth_evt_buf[USB_ALIGN_UP(256, CONFIG_USB_ALIGN_SIZE)]')
+
+
+def hci_buffers(text):
+    if all(b.replace('256', '288') in text for b in HCI_BUFS):
+        return None
+    for b in HCI_BUFS:
+        if text.count(b) != 1:
+            raise SystemExit('usbh_bluetooth.c does not look like the one in SDK v2.3.33')
+        text = text.replace(b, b.replace('256', '288'))
+    return text
+
+
 def main():
     sdk = sys.argv[1]
     for rel, fix in (('cmake/compiler_flags.cmake', no_lto),
-                     ('components/usb/cherryusb/core/usbh_core.c', skip_altsettings)):
+                     ('components/usb/cherryusb/core/usbh_core.c', skip_altsettings),
+                     ('components/usb/cherryusb/class/wireless/usbh_bluetooth.c', hci_buffers)):
         path = os.path.join(sdk, rel)
         if not os.path.exists(path):
             raise SystemExit('missing: ' + path)

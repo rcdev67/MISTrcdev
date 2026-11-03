@@ -31,6 +31,11 @@ echo === u8g2, the companion's display library ===
 if errorlevel 1 goto :failed
 
 echo.
+echo === BTstack, the companion's Bluetooth stack ===
+%G% -C sources/FPGA-Companion submodule update --init --depth 1 src/btstack
+if errorlevel 1 goto :failed
+
+echo.
 git submodule status
 echo.
 echo Done. Next: TOOLS.md, then get_binaries.cmd or the build scripts.
