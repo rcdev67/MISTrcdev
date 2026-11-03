@@ -86,7 +86,7 @@ The sources under `sources/` are our forks of the maintainers' repositories:
 |---|---|---|---|
 | `sources/C64Nano` | [rcdev67/C64Nano](https://github.com/rcdev67/C64Nano) | `nano20k-running` | `165cc15` |
 | `sources/MiSTeryNano` | [rcdev67/MiSTeryNano](https://github.com/rcdev67/MiSTeryNano) | `nano20k-running` | `6352a1c` |
-| `sources/FPGA-Companion` | [rcdev67/FPGA-Companion](https://github.com/rcdev67/FPGA-Companion) | `net-download` | `f179d82` |
+| `sources/FPGA-Companion` | [rcdev67/FPGA-Companion](https://github.com/rcdev67/FPGA-Companion) | `net-download` | `156f299` |
 | `sources/Zimodem` | [rcdev67/Zimodem](https://github.com/rcdev67/Zimodem) | `c3-supermini-misterynano` | `537d519` |
 
 In none of those forks is `main` the working branch. **Moving a pin** to a
@@ -116,7 +116,7 @@ its checksum.
 | | |
 |---|---|
 | **Atari ST** | running since September 2026 — our own core build, networking through a real modem, drive sounds |
-| **C64** | **running since 26 October 2026**: picture, USB hub with keyboard, OSD on F12 without delay, SD card mounted, and the 1541 reading a disk image. Getting there needed one change to the core — see [`COMPANION-CORE-CONTRACT.md`](COMPANION-CORE-CONTRACT.md). Since 27 October: **drive sounds** from real 1541 recordings, a **WiFi modem** for terminal programs and BBSes (the ST's ESP32-S3 with Zimodem, on the same pins), a **German keyboard** layout, and the original Commodore kernal as the standard. Since 3 November: a **Bluetooth keyboard** through a USB Bluetooth adapter on the hub |
+| **C64** | **running since 26 October 2026**: picture, USB hub with keyboard, OSD on F12 without delay, SD card mounted, and the 1541 reading a disk image. Getting there needed one change to the core — see [`COMPANION-CORE-CONTRACT.md`](COMPANION-CORE-CONTRACT.md). Since 27 October: **drive sounds** from real 1541 recordings, a **WiFi modem** for terminal programs and BBSes (the ST's ESP32-S3 with Zimodem, on the same pins), a **German keyboard** layout, and the original Commodore kernal as the standard. Since 3 November: **Bluetooth keyboards** through a USB Bluetooth adapter on the hub, classic and Low Energy, two at once |
 
 Switching platforms is **one** flash write at `0x000000` — the ROMs for both
 machines fit in the flash at the same time. Switching at runtime is

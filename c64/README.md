@@ -249,8 +249,9 @@ well.
 ## A Bluetooth keyboard
 
 A Bluetooth keyboard works through a USB Bluetooth adapter on the hub; the
-companion pairs it and passes its keys on like a USB keyboard's. Tested: a
-Logitech K380 on a Realtek RTL8761B adapter. Which adapters, how to pair,
+companion pairs it and passes its keys on like a USB keyboard's. Tested on a
+Realtek RTL8761B adapter: a Logitech K380 (classic Bluetooth) and a ROG
+Azoth X (Bluetooth Low Energy), also both at once. Which adapters, how to pair,
 and where the pairing is kept: [`../companion/README.md`](../companion/README.md),
 *Bluetooth keyboards*.
 
