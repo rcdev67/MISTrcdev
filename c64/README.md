@@ -403,6 +403,19 @@ seven; the companion sees the small buffers and transfers at 38400: a 30 KB
 program in about 8 seconds, a full disk image in under a minute. To make
 room, the core has no MIDI interface any more.
 
+**Starting a disk.** Put the file into the drive with F12, *Floppy:*. A
+copy protected disk from a No-Intro set does not always start with
+`LOAD"*",8,1`; what works is the way it was done in 1985: list the disk,
+then load the main program by its name.
+
+    LOAD"$",8
+    LIST
+    LOAD"NAME",8
+    RUN
+
+The drive sound gets busy on protected disks; that is the 1541 doing what
+the original did.
+
 Every download is written to `NETLOG.TXT` in the root of the card; when one
 fails, that line says why.
 
