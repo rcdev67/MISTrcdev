@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 850" font-family="Segoe UI, Arial, Helvetica, sans-serif"><rect width="1000" height="850" fill="#ffffff"/>
+<text x="500" y="36" font-size="22" fill="#222" text-anchor="middle" font-weight="bold">Tang Nano 20K, right pin header: every wire</text>
+<text x="500" y="60" font-size="14" fill="#555" text-anchor="middle">Board seen from above, USB-C at the top, HDMI at the bottom. The pins in the order they sit on the board.</text>
+<rect x="180" y="80" width="300" height="690" rx="12" fill="#2f6b3a" stroke="none" stroke-width="2"/>
+<text x="330" y="102" font-size="15" fill="#fff" text-anchor="middle" font-weight="bold">Tang Nano 20K</text>
+<text x="330" y="120" font-size="12" fill="#d8eadb" text-anchor="middle">right pin header</text>
+<rect x="408" y="122" width="44" height="24" rx="3" fill="#d62828" stroke="#333" stroke-width="1"/>
+<text x="430" y="139" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">5V</text>
+<rect x="408" y="154" width="44" height="24" rx="3" fill="#222222" stroke="#333" stroke-width="1"/>
+<text x="430" y="171" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">GND</text>
+<rect x="408" y="186" width="44" height="24" rx="3" fill="#e9ecef" stroke="#333" stroke-width="1"/>
+<text x="430" y="203" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">76</text>
+<rect x="408" y="218" width="44" height="24" rx="3" fill="#e9ecef" stroke="#333" stroke-width="1"/>
+<text x="430" y="235" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">80</text>
+<rect x="408" y="250" width="44" height="24" rx="3" fill="#e9ecef" stroke="#333" stroke-width="1"/>
+<text x="430" y="267" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">42</text>
+<rect x="408" y="282" width="44" height="24" rx="3" fill="#2b8a3e" stroke="#333" stroke-width="1"/>
+<text x="430" y="299" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">41</text>
+<rect x="408" y="314" width="44" height="24" rx="3" fill="#e9c46a" stroke="#333" stroke-width="1"/>
+<text x="430" y="331" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">56</text>
+<rect x="408" y="346" width="44" height="24" rx="3" fill="#e9ecef" stroke="#333" stroke-width="1"/>
+<text x="430" y="363" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">54</text>
+<rect x="408" y="378" width="44" height="24" rx="3" fill="#2b8a3e" stroke="#333" stroke-width="1"/>
+<text x="430" y="395" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">51</text>
+<rect x="408" y="410" width="44" height="24" rx="3" fill="#1c5fb8" stroke="#333" stroke-width="1"/>
+<text x="430" y="427" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">48</text>
+<rect x="408" y="442" width="44" height="24" rx="3" fill="#e9ecef" stroke="#333" stroke-width="1"/>
+<text x="430" y="459" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">55</text>
+<rect x="408" y="474" width="44" height="24" rx="3" fill="#e9ecef" stroke="#333" stroke-width="1"/>
+<text x="430" y="491" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">49</text>
+<rect x="408" y="506" width="44" height="24" rx="3" fill="#e9ecef" stroke="#333" stroke-width="1"/>
+<text x="430" y="523" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">86</text>
+<rect x="408" y="538" width="44" height="24" rx="3" fill="#e9ecef" stroke="#333" stroke-width="1"/>
+<text x="430" y="555" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">79</text>
+<rect x="408" y="570" width="44" height="24" rx="3" fill="#222222" stroke="#333" stroke-width="1"/>
+<text x="430" y="587" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">GND</text>
+<rect x="408" y="602" width="44" height="24" rx="3" fill="#f08c00" stroke="#333" stroke-width="1"/>
+<text x="430" y="619" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">3V3</text>
+<rect x="408" y="634" width="44" height="24" rx="3" fill="#e9ecef" stroke="#333" stroke-width="1"/>
+<text x="430" y="651" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">72</text>
+<rect x="408" y="666" width="44" height="24" rx="3" fill="#e9ecef" stroke="#333" stroke-width="1"/>
+<text x="430" y="683" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">71</text>
+<rect x="408" y="698" width="44" height="24" rx="3" fill="#e9ecef" stroke="#333" stroke-width="1"/>
+<text x="430" y="715" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">53</text>
+<rect x="408" y="730" width="44" height="24" rx="3" fill="#e9ecef" stroke="#333" stroke-width="1"/>
+<text x="430" y="747" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">52</text>
+<text x="400" y="139" font-size="12" fill="#fff" text-anchor="end">5 V in, from the rail</text>
+<text x="400" y="299" font-size="12" fill="#fff" text-anchor="end">modem sends here</text>
+<text x="400" y="395" font-size="12" fill="#fff" text-anchor="end">modem receives here</text>
+<text x="400" y="331" font-size="12" fill="#fff" text-anchor="end">leave free (low: companion off)</text>
+<text x="400" y="363" font-size="12" fill="#fff" text-anchor="end">ESP32 GPIO17, its Bluetooth build only</text>
+<text x="400" y="427" font-size="12" fill="#fff" text-anchor="end">companion console out, 2,000,000 baud</text>
+<text x="400" y="459" font-size="12" fill="#fff" text-anchor="end">console in, not needed</text>
+<text x="400" y="619" font-size="12" fill="#fff" text-anchor="end">not for the ESP32</text>
+<rect x="540" y="100" width="40" height="660" rx="4" fill="#f8f9fa" stroke="#aaa" stroke-width="1"/>
+<text x="560" y="92" font-size="12" fill="#444" text-anchor="middle">rail</text>
+<path d="M552 110 L552 750" fill="none" stroke="#d62828" stroke-width="4" stroke-linejoin="round"/>
+<path d="M568 110 L568 750" fill="none" stroke="#222222" stroke-width="4" stroke-linejoin="round"/>
+<path d="M452 134 L552 134" fill="none" stroke="#d62828" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="552" cy="134" r="4.5" fill="#d62828"/>
+<path d="M452 166 L568 166" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="568" cy="166" r="4.5" fill="#222222"/>
+<text x="560" y="778" font-size="12" fill="#444" text-anchor="middle">+5 V and GND from the supply,</text>
+<text x="560" y="794" font-size="12" fill="#444" text-anchor="middle">470 µF across them</text>
+<rect x="720" y="150" width="240" height="330" rx="10" fill="#1d3b5a" stroke="none" stroke-width="2"/>
+<text x="840" y="178" font-size="16" fill="#fff" text-anchor="middle" font-weight="bold">ESP32-S3 DevKitC-1</text>
+<text x="840" y="197" font-size="12" fill="#cfe0f0" text-anchor="middle">pins by function: find them</text>
+<text x="840" y="213" font-size="12" fill="#cfe0f0" text-anchor="middle">on its silkscreen</text>
+<rect x="770" y="400" width="140" height="60" rx="6" fill="#8a97a3" stroke="#5c6770" stroke-width="2"/>
+<text x="840" y="435" font-size="12" fill="#fff" text-anchor="middle">antenna end</text>
+<rect x="710" y="259" width="72" height="22" rx="3" fill="#d62828" stroke="#333" stroke-width="1"/>
+<text x="746" y="275" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold">5V</text>
+<rect x="710" y="289" width="72" height="22" rx="3" fill="#222222" stroke="#333" stroke-width="1"/>
+<text x="746" y="305" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold">GND</text>
+<rect x="710" y="339" width="72" height="22" rx="3" fill="#2b8a3e" stroke="#333" stroke-width="1"/>
+<text x="746" y="355" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold">GPIO16</text>
+<rect x="710" y="369" width="72" height="22" rx="3" fill="#2b8a3e" stroke="#333" stroke-width="1"/>
+<text x="746" y="385" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold">GPIO15</text>
+<text x="840" y="345" font-size="11.5" fill="#ffb3b3" text-anchor="middle">not 3V3: 5 V there</text>
+<text x="840" y="360" font-size="11.5" fill="#ffb3b3" text-anchor="middle">destroys the S3</text>
+<path d="M552 270 L710 270" fill="none" stroke="#d62828" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="552" cy="270" r="4.5" fill="#d62828"/>
+<path d="M568 300 L710 300" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="568" cy="300" r="4.5" fill="#222222"/>
+<path d="M710 350 L630 350 L630 294 L452 294" fill="none" stroke="#2b8a3e" stroke-width="3" stroke-linejoin="round"/>
+<path d="M710 380 L650 380 L650 390 L452 390" fill="none" stroke="#2b8a3e" stroke-width="3" stroke-linejoin="round"/>
+<rect x="720" y="560" width="240" height="120" rx="8" fill="#fff" stroke="#666" stroke-width="2"/>
+<text x="840" y="586" font-size="16" fill="#222" text-anchor="middle" font-weight="bold">USB serial adapter</text>
+<text x="840" y="605" font-size="12" fill="#555" text-anchor="middle">only when something is wrong:</text>
+<text x="840" y="621" font-size="12" fill="#555" text-anchor="middle">FTDI, CH340 or CH343, 2 Mbaud</text>
+<rect x="710" y="640" width="60" height="22" rx="3" fill="#1c5fb8" stroke="#333" stroke-width="1"/>
+<text x="740" y="656" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold">RX</text>
+<rect x="790" y="640" width="60" height="22" rx="3" fill="#222222" stroke="#333" stroke-width="1"/>
+<text x="820" y="656" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold">GND</text>
+<text x="905" y="656" font-size="12" fill="#b00" text-anchor="middle">never 5V</text>
+<path d="M710 651 L610 651 L610 422 L452 422" fill="none" stroke="#1c5fb8" stroke-width="3" stroke-linejoin="round"/>
+<path d="M820 662 L820 678 L600 678 L600 582 L452 582" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+<text x="500" y="835" font-size="13" fill="#444" text-anchor="middle">With the Bluetooth adapter on the hub, pin 54 stays free. The ESP32 needs nothing else: its USB socket stays empty.</text>
+</svg>

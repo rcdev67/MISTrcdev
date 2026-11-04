@@ -15,6 +15,9 @@ ROM images, which are not ours to hand out, and the tools, which
 | **Power supply** | **not** a PC — on a PC the BL616 stays a debugger and the companion does not run |
 | **The tools on the PC** | [`../TOOLS.md`](../TOOLS.md): to flash ready-made binaries only the first table, to build everything the second one too |
 
+The parts in detail, the wiring diagram and the power rules:
+[`../HARDWARE.md`](../HARDWARE.md).
+
 The sources are in [`../sources`](../sources), pinned to the state described
 here: the core in [`sources/C64Nano`](../sources/C64Nano), our fork of
 MiSTle-Dev's C64Nano, and the companion in
@@ -274,11 +277,13 @@ The onboard BL616 stays the companion with the USB hub.
 | GND | GND | |
 
 **Leave pin 56 unconnected** -- pulling it low switches the companion to an
-external dock and the keyboard disappears. **Power the S3 through its own
-"UART" USB socket**; from the Tang's 5V it browned out at every WiFi join. And
-**switch the Tang on first, the S3 after**: a separately powered modem feeds the
-switched-off Tang through pin 41, and the SD card then fails to start -- a red
-LED that looks like anything but a power-up order.
+external dock and the keyboard disappears. **Power the S3 from the same 5 V
+supply as the Tang**: both on the rails of a breadboard, a 470 µF capacitor
+across them, the S3's `5V` and `GND` pins on the rail, its USB sockets empty.
+Not from the Tang's 3V3: WiFi failed there on both boards once the Bluetooth
+adapter was on the hub. Not from a second supply either: a separately powered
+modem feeds the switched-off Tang through pin 41, and the SD card then fails
+to start. The wiring diagram is in [`../HARDWARE.md`](../HARDWARE.md).
 
 **Flash the S3** with the plain modem, through the "UART" socket. The other
 socket is the S3's native USB and shows up as Espressif's own `303A`; the UART

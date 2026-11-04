@@ -36,6 +36,9 @@ recorded place and route options.
 - on the PC, the tools in [`../TOOLS.md`](../TOOLS.md): to flash ready-made
   binaries only the first table, to build everything the second one too
 
+The parts in detail, the wiring diagram and the power rules:
+[`../HARDWARE.md`](../HARDWARE.md).
+
 ## 2. Setting it up
 
 1. **The binaries.** Either fetch them,
@@ -138,9 +141,9 @@ This is where most of my lost evenings went, so here are the rules first:
   [`../sources/MiSTeryNano/doc`](../sources/MiSTeryNano/doc) prints a label
   sheet for both pin headers.
 
-The S3's signal wires: GPIO16 to pin 41, GPIO15 to pin 51, GPIO17 to
-pin 54, as drawn in
-[the wiring diagram](../sources/Zimodem/doc/s3_wiring.svg).
+The S3's signal wires: GPIO16 to pin 41, GPIO15 to pin 51, and GPIO17 to
+pin 54 only with its Bluetooth build. All of it is drawn in
+[`../HARDWARE.md`](../HARDWARE.md).
 
 ## 4. The on-screen menu
 

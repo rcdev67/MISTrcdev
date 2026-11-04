@@ -50,6 +50,7 @@ deepest build file adds about 125 to wherever MISTrcdev lies;
 `git clone --recursive` would also fetch every submodule of every submodule,
 nearly three times as much, and can stop at a path longer than Windows allows.
 
+The parts, how they are wired and powered: [`HARDWARE.md`](HARDWARE.md).
 Then the tools from [`TOOLS.md`](TOOLS.md), and one of two ways:
 
 - **Flash ready-made binaries**: [`get_binaries.cmd`](get_binaries.cmd) puts
@@ -71,11 +72,12 @@ vendors' user interfaces. Then the guide for your machine:
 | | |
 |---|---|
 | [`c64/`](c64) | **C64**: the guide, `build_core.cmd`, flash scripts, the SD card, reading the LEDs, troubleshooting |
-| [`atarist/`](atarist) | **Atari ST**: the guide, `build_core.cmd`, `flashlash_atarist.cmd` |
+| [`atarist/`](atarist) | **Atari ST**: the guide, `build_core.cmd`, `flash\flash_atarist.cmd` |
 | [`companion/`](companion) | the **BL616 companion**, shared by both machines: board revisions 3921 and 3923, `build_companion.cmd`, `flash_companion.cmd`, the console |
 | [`esp32/`](esp32) | the **WiFi modem**, an ESP32-S3 with Zimodem: `build_zimodem.cmd`, `flash_zimodem.cmd` |
 | [`server/`](server) | **stserve**, the collection on a NAS or PC for both machines' *Download...*: ZIP archives opened on the fly, menus of thirty, and a catalogue in the browser with pictures, favourites and a button that sends a game to the computer |
 | [`sources/`](sources) | the sources, as git submodules of our forks, each pinned to a tested commit |
+| [`HARDWARE.md`](HARDWARE.md) | the **parts** and the **wiring**: what to buy, every wire on the pin header, power and antenna |
 | [`TOOLS.md`](TOOLS.md) | the tools from outside, with exact versions and where to get them |
 | [`paths.cmd`](paths.cmd) | where the tools are; read by every script |
 | `bin\` | what the scripts build or fetch; not part of the repository |
