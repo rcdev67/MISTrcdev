@@ -57,6 +57,28 @@ recorded place and route options.
    An ST slot wants a TOS for the ST (1.00 to 1.04, or 2.06), an STE slot
    one for the STE (1.06, 1.62, 2.06). The title line of the OSD shows
    which version is actually running, so you never have to guess.
+
+   **Where they come from.** TOS is Atari's, and neither this repository
+   nor a script here fetches it. Three ways:
+
+   - **Your own ST:** a dump of its ROMs is the image of exactly the
+     machine you had.
+   - **What the maintainers point to:** the MiSTeryNano guide
+     ([`INSTALLATION_WINDOWS.md`](../sources/MiSTeryNano/INSTALLATION_WINDOWS.md))
+     names [atariworld.org](https://www.atariworld.org/tos-rom/) for TOS
+     images; upstream tested US TOS 1.00 and German 1.04, 1.62 and 2.06.
+     The files there are named like `tos104de.img`: rename it to the slot
+     it goes to, `st1.img`.
+   - **EmuTOS**, a free TOS written anew, under the GPL:
+     <https://emutos.sourceforge.io/>. The 192 KB image (`etos192de.img`
+     for German) fits an ST slot, the 256 KB one (`etos256de.img`) an STE
+     slot. Not tried on this setup yet.
+
+   **The language is in the TOS.** Where the disk in drive A has no
+   `DESKTOP.INF`, the desktop names the drives and the trash in the
+   language of the TOS that runs: `CORBEILLE` instead of `PAPIERKORB`
+   means a French TOS is in the slot. A slot keeps whatever was flashed
+   there last, also by someone before you; flash your own over it.
 3. **Flash the core and the TOS images** with
    [`flash\flash_atarist.cmd`](flash/flash_atarist.cmd), the board on the PC.
    This core uses the JTAG pins as regular IO, so before **every** step:
