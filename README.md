@@ -87,8 +87,8 @@ The sources under `sources/` are our forks of the maintainers' repositories:
 |---|---|---|---|
 | `sources/C64Nano` | [rcdev67/C64Nano](https://github.com/rcdev67/C64Nano) | `nano20k-running` | `98937de` |
 | `sources/MiSTeryNano` | [rcdev67/MiSTeryNano](https://github.com/rcdev67/MiSTeryNano) | `nano20k-running` | `731e2ce` |
-| `sources/FPGA-Companion` | [rcdev67/FPGA-Companion](https://github.com/rcdev67/FPGA-Companion) | `net-download` | `3be143b` |
-| `sources/Zimodem` | [rcdev67/Zimodem](https://github.com/rcdev67/Zimodem) | `c3-supermini-misterynano` | `ea3fef5` |
+| `sources/FPGA-Companion` | [rcdev67/FPGA-Companion](https://github.com/rcdev67/FPGA-Companion) | `net-download` | `7571588` |
+| `sources/Zimodem` | [rcdev67/Zimodem](https://github.com/rcdev67/Zimodem) | `c3-supermini-misterynano` | `7b14906` |
 
 In none of those forks is `main` the working branch. **Moving a pin** to a
 newer state of its fork: `git -C sources/C64Nano fetch` and

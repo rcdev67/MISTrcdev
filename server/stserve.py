@@ -1459,15 +1459,49 @@ class Handler(BaseHTTPRequestHandler):
             self.log_message("cannot open %s: %s", e.real, exc)
             return self.fail(404, "Not Found")
 
+        # A part of the file, "Range: bytes=N-" or "bytes=N-M": the modem asks
+        # for the rest when its WiFi stalled in the middle, instead of
+        # starting over on a connection TCP has already slowed to a crawl.
+        start, end = 0, size - 1
+        m = re.match(r"bytes=(\d+)-(\d*)$", self.headers.get("Range", "").strip())
+        partial = bool(m) and int(m.group(1)) < size
+        if partial:
+            start = int(m.group(1))
+            if m.group(2):
+                end = min(int(m.group(2)), size - 1)
+            if end < start:
+                partial, start, end = False, 0, size - 1
+
         try:
-            self.send_response(200, "OK")
+            if start:
+                if zf:      # an archive member has no seek: read past it
+                    left = start
+                    while left:
+                        n = len(src.read(min(left, BLOCK)))
+                        if not n:
+                            break
+                        left -= n
+                else:
+                    src.seek(start)
+            if partial:
+                self.send_response(206, "Partial Content")
+                self.send_header("Content-Range", "bytes %d-%d/%d" % (start, end, size))
+            else:
+                self.send_response(200, "OK")
             self.send_header("Content-Type", "application/octet-stream")
-            self.send_header("Content-Length", str(size))
+            self.send_header("Content-Length", str(end - start + 1))
+            self.send_header("Accept-Ranges", "bytes")
             self.send_header("Connection", "close")
             self.end_headers()
             if body:
-                shutil.copyfileobj(src, self.wfile, BLOCK)
-                if sent_game:
+                left = end - start + 1
+                while left:
+                    chunk = src.read(min(left, BLOCK))
+                    if not chunk:
+                        break
+                    self.wfile.write(chunk)
+                    left -= len(chunk)
+                if sent_game and end == size - 1:
                     sent.remove(sent_game.id)     # it is on the card now
         except (BrokenPipeError, ConnectionResetError, socket.timeout):
             self.log_message("transfer of %s broke off", e.name)

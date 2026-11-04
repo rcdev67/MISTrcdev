@@ -126,6 +126,16 @@ def main():
                 want = f.read()
             check(want == body, "served file is identical")
 
+    # --- the rest of a file, as the modem asks for it after its WiFi stalled
+    cut = len(body) // 3
+    req = urllib.request.Request(base + last_file, headers={
+        "User-Agent": "Zimodem Firmware", "Range": "bytes=%d-" % cut})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        part, prange = resp.read(), resp.headers.get("Content-Range", "")
+        check(resp.status == 206, "a range is answered as a part", "status %d" % resp.status)
+    check(part == body[cut:], "the part is the rest of the file",
+          "%d bytes from %d, %s" % (len(part), cut, prange))
+
     # --- the things that must not work
     status = 0
     try:

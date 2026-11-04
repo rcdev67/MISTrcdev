@@ -407,9 +407,11 @@ any more.
 **The modem holds the whole file first.** At 38400 baud the ESP32 takes
 the file more slowly than the server sends it, and a big one used to stall
 until it broke off with *Short transfer*. Our Zimodem fork reads the file
-into the S3's PSRAM first and sends it from there, so flash the modem from
-this repository's `bin\`; a modem with an older firmware still manages
-programs and small disks.
+into the S3's PSRAM first and sends it from there; over a weak WiFi link,
+where the connection stands still now and then, it fetches the rest on a
+new connection instead of giving up, see [`server/`](../server). So flash
+the modem from this repository's `bin\`; a modem with an older firmware
+still manages programs and small disks.
 
 **Starting a disk.** Put the file into the drive with F12, *Floppy:*,
 close the OSD, and load the first program on the disk to the address it
