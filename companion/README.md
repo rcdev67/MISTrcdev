@@ -109,9 +109,12 @@ exactly as from USB, so it works for the C64 and the Atari ST alike, the
 German layout included.
 
 **Up to four devices at once**: a keyboard, a mouse and two controllers,
-as much as a computer of that time needs. More can go on USB. The four
-are what the companion's memory holds with room to spare; a fifth is
-refused, and the console says why.
+as much as a computer of that time needs. More can go on USB. A
+connection takes some 3 KB of the companion's heap; with two keyboards and
+a controller in, 61 KB of it are still free. Until November 2026 the third
+device found no room: the USB hub limits reserved 90 KB for hub ports that
+were never there, see `usb_config.h` in the companion sources. A device
+the heap cannot take is tried again every 30 s, and the console says why.
 
 | | |
 |---|---|
@@ -142,7 +145,10 @@ Bluetooth*. It arrives as the first USB joystick: in the core's OSD, set
 the joystick port to *USB Joy 1*, as for a controller on USB.
 
 **After that** each one reconnects by itself at every power on: press any
-key, or the Xbox button, to wake it. A device switched off, or to another
+key, or the Xbox button, to wake it. Measured on the C64: the K380 some
+17 s after power on, the Low Energy ones within half a minute; the
+Atari ST starts its Bluetooth about two seconds later, once its SD card is
+up. A device switched off, or to another
 channel or its own receiver, drops out; the others keep working, and
 switched back it reconnects without pairing again. To pair another one,
 **Shift+F12**, *Scan Bluetooth*, and put it into pairing mode.
