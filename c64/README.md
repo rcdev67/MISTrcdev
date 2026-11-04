@@ -411,15 +411,31 @@ into the S3's PSRAM first and sends it from there, so flash the modem from
 this repository's `bin\`; a modem with an older firmware still manages
 programs and small disks.
 
-**Starting a disk.** Put the file into the drive with F12, *Floppy:*. A
-copy protected disk from a No-Intro set does not always start with
-`LOAD"*",8,1`; what works is the way it was done in 1985: list the disk,
-then load the main program by its name.
+**Starting a disk.** Put the file into the drive with F12, *Floppy:*,
+close the OSD, and load the first program on the disk to the address it
+was written for:
+
+    LOAD"*",8,1
+
+Most games start by themselves once it is in; if `READY.` comes back
+instead, type `RUN`. **Wait.** Many load their rest with the 1541's own
+speed and show nothing but `LOADING` meanwhile: Airwolf takes almost three
+minutes until its title, Summer Games under one, measured the same in
+VICE. The `,1` matters: a loader of a single block that puts itself into
+the stack, as Airwolf's does, starts only when it lands there. Without it,
+loaded to BASIC's start, it stops after three seconds with `READY.`
+
+To see what is on a disk first:
 
     LOAD"$",8
     LIST
-    LOAD"NAME",8
-    RUN
+
+**The asterisk.** With `option keymap=1` (see *A German keyboard* above) shift
+and the key printed `+` give `*`, as printed, and so does the acute key
+next to it. With the US mapping `*` is the key printed `+`, unshifted. On
+the C64 itself `*` and `+` are keys of their own, and shift and `+` is a
+graphics character, a big cross: a `LOAD"*"` that shows a cross instead
+of the asterisk loads nothing.
 
 The drive sound gets busy on protected disks; that is the 1541 doing what
 the original did.
