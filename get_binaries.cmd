@@ -23,7 +23,7 @@ rem ---------------------------------------------------------------------------
 setlocal
 call "%~dp0paths.cmd"
 
-set RELEASE=2026-11-04
+set RELEASE=2026-11-04.2
 set BASE=https://github.com/rcdev67/MISTrcdev/releases/download/%RELEASE%
 set FORCE=
 if /i "%~1"=="force" set FORCE=1
