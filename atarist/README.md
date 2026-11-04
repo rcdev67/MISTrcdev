@@ -141,9 +141,8 @@ This is where most of my lost evenings went, so here are the rules first:
   [`../sources/MiSTeryNano/doc`](../sources/MiSTeryNano/doc) prints a label
   sheet for both pin headers.
 
-The S3's signal wires: GPIO16 to pin 41, GPIO15 to pin 51, and GPIO17 to
-pin 54 only with its Bluetooth build. All of it is drawn in
-[`../HARDWARE.md`](../HARDWARE.md).
+The S3's two signal wires: GPIO16 to pin 41, GPIO15 to pin 51. All of it
+is drawn in [`../HARDWARE.md`](../HARDWARE.md).
 
 ## 4. The on-screen menu
 
@@ -286,9 +285,9 @@ Home** the right one. On the desktop and in GEM programs, not in games
 that read the mouse themselves.
 
 Until November 2026 a Bluetooth controller paired with the ESP32 instead,
-with the Bluepad32 build of Zimodem (`flash_zimodem.cmd bt`). That build
-still exists, but with the adapter on the hub it is not needed, and the
-ESP32's WiFi is faster without it.
+with the Bluepad32 build of Zimodem and a third wire to pin 54. Bluetooth
+now always goes through the adapter on the hub: the ESP32 runs the plain
+modem, its WiFi is faster without Bluetooth, and pin 54 stays free.
 
 ## 9. When something does not work
 

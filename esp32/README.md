@@ -2,9 +2,9 @@
 
 An **ESP32-S3 DevKitC-1** (N16R8) running our Zimodem fork, the sources in
 [`../sources/Zimodem`](../sources/Zimodem). Both machines use it on the same
-three pins: as a Hayes modem for terminal programs and BBSes, and on the Atari
-ST also for the companion's file download and as the receiver of a Bluetooth
-game controller.
+two pins: as a Hayes modem for terminal programs and BBSes, and for the
+companion's file download. Bluetooth does not go through it: keyboards and
+controllers pair with the USB Bluetooth adapter on the hub.
 
 The wiring, the power rules and how to set it up from the machine are in the
 guides: [`../c64/README.md`](../c64/README.md), section *The modem*, and
@@ -14,8 +14,8 @@ guides: [`../c64/README.md`](../c64/README.md), section *The modem*, and
 
 | Image in `bin\` | Built with | For |
 |---|---|---|
-| `zimodem-s3-devkitc.bin` | `build_zimodem.cmd` | **the C64**, and anyone who only wants the modem. WiFi stays out of power saving, and the modem answers at once |
-| `zimodem-s3-devkitc-bluepad32.bin` | `build_zimodem.cmd bt` | **the Atari ST** with a Bluetooth controller as joystick 1 (tested: Xbox Series). With Bluetooth running the WiFi driver insists on modem sleep, and every keystroke to a BBS waits for the next wake-up |
+| `zimodem-s3-devkitc.bin` | `build_zimodem.cmd` | **both machines**. WiFi stays out of power saving, and the modem answers at once |
+| `zimodem-s3-devkitc-bluepad32.bin` | `build_zimodem.cmd bt` | not used in this setup any more: it paired a Bluetooth controller for the Atari ST, through a third wire to pin 54. With Bluetooth running the WiFi driver insists on modem sleep, and every keystroke to a BBS waits for the next wake-up |
 
 Both are also in the release, see [`../get_binaries.cmd`](../get_binaries.cmd).
 The board packages for building are in [`../TOOLS.md`](../TOOLS.md).

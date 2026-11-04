@@ -266,14 +266,13 @@ keyboards and controllers*.
 ## The modem: WiFi for the C64
 
 The same add-on as on the Atari ST: an **ESP32-S3 DevKitC-1** (N16R8) running
-our Zimodem fork in [`../sources/Zimodem`](../sources/Zimodem), on the same three pins.
+our Zimodem fork in [`../sources/Zimodem`](../sources/Zimodem), on the same two pins.
 The onboard BL616 stays the companion with the USB hub.
 
 | ESP32-S3 | Tang Nano 20K | |
 |---|---|---|
 | GPIO16 (TX) | 41 | the C64 receives here |
 | GPIO15 (RX) | 51 | the C64 sends here |
-| GPIO17 | 54 | Bluetooth controllers, not read by the C64 core yet |
 | GND | GND | |
 
 **Leave pin 56 unconnected** -- pulling it low switches the companion to an

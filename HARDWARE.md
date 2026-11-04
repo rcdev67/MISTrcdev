@@ -26,7 +26,7 @@ Atari ST, and switching between them only means flashing the other core.
 | Part | What to look for |
 |---|---|
 | **Espressif ESP32-S3 DevKitC-1** | the N16R8 variant (16 MB flash, 8 MB PSRAM): the download is held in its PSRAM. The **DevKitC-1U** is the same board with a socket for an external antenna -- the better choice where the router is far away |
-| **Five jumper wires** | 5V, GND, the two modem wires, and GPIO17 for a Bluetooth controller on the Atari ST |
+| **Four jumper wires** | 5V, GND and the two signal wires. Bluetooth does not go through the S3: that is the adapter on the hub |
 
 It runs our Zimodem fork, [`esp32/README.md`](esp32/README.md). Without it
 both machines run; only the network is missing.
@@ -70,7 +70,7 @@ with USB-C at the top. Counted from the top:
 | 5 | 42 | |
 | 6 | **41** | ESP32-S3 GPIO16: the modem sends here |
 | 7 | **56** | **leave free**: pulled low, it switches the companion over to an external dock and the keyboard disappears |
-| 8 | **54** | ESP32-S3 GPIO17: a Bluetooth controller paired with the S3, as joystick 1 on the Atari ST. Only the S3's Bluetooth build uses it |
+| 8 | 54 | |
 | 9 | **51** | ESP32-S3 GPIO15: the modem receives here |
 | 10 | **48** | the companion's console out, to the RX of a USB serial adapter, 2,000,000 baud |
 | 11 | 55 | console in, not needed |
