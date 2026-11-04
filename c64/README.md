@@ -400,8 +400,16 @@ with it.
 port's buffers are 15 bytes in distributed RAM instead of the ST's 255. At
 the ST's 460800 baud one transfer in three failed, at 115200 three in
 seven; the companion sees the small buffers and transfers at 38400: a 30 KB
-program in about 8 seconds, a full disk image in under a minute. To make
-room, the core has no MIDI interface any more.
+program in about 8 seconds, a D64 in under a minute, a G64 of 333 KB in
+about a minute and a half. To make room, the core has no MIDI interface
+any more.
+
+**The modem holds the whole file first.** At 38400 baud the ESP32 takes
+the file more slowly than the server sends it, and a big one used to stall
+until it broke off with *Short transfer*. Our Zimodem fork reads the file
+into the S3's PSRAM first and sends it from there, so flash the modem from
+this repository's `bin\`; a modem with an older firmware still manages
+programs and small disks.
 
 **Starting a disk.** Put the file into the drive with F12, *Floppy:*. A
 copy protected disk from a No-Intro set does not always start with
