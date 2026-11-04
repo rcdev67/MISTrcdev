@@ -208,11 +208,13 @@ the modem is online the companion takes the time from it and sets the ST's
 clock. The `timezone` line in `atarist.ini` says which zone (a code such as
 `CET`, `CEST`, `GMT`; without it you get UTC). The modem knows no daylight
 saving rules, so in Germany write `CET` in winter and `CEST` in summer.
-TOS reads the clock only once, when it starts, and at that moment the
-modem is not online yet. So after switching on wait until the modem's
-address stands in the OSD title (the companion shows it only after it has
-set the clock), then use `Reset`: from then on date and time are right.
-Without that reset TOS keeps the date it started with, 1989 with TOS 1.04.
+TOS reads the clock only once, when it starts. So with a modem the
+companion holds the ST back at power-up until the modem has the time --
+the screen stays dark for some seconds -- and lets it start then, at most
+after `clockwait=` seconds from `atarist.ini` (15 by default). Date and time are right
+from the desktop on, without a `Reset`. Should the modem not get online
+in time, TOS keeps the date it knows, 1989 with TOS 1.04; a `Reset` once
+the modem's address stands in the OSD title sets it right.
 I have seen this work with TOS 1.04 and TOS 2.06. If the clock stays wrong,
 `NETLOG.TXT` on the SD card tells what happened (`clock set: ...`, or why
 not).
