@@ -10,15 +10,20 @@ The wiring, the power rules and how to set it up from the machine are in the
 guides: [`../c64/README.md`](../c64/README.md), section *The modem*, and
 [`../atarist/README.md`](../atarist/README.md), sections 3 and 6.
 
-## Two images
+## The image
 
-| Image in `bin\` | Built with | For |
-|---|---|---|
-| `zimodem-s3-devkitc.bin` | `build_zimodem.cmd` | **both machines**. WiFi stays out of power saving, and the modem answers at once |
-| `zimodem-s3-devkitc-bluepad32.bin` | `build_zimodem.cmd bt` | not used in this setup any more: it paired a Bluetooth controller for the Atari ST, through a third wire to pin 54. With Bluetooth running the WiFi driver insists on modem sleep, and every keystroke to a BBS waits for the next wake-up |
+`bin\zimodem-s3-devkitc.bin`, from `build_zimodem.cmd` or from the release
+through [`../get_binaries.cmd`](../get_binaries.cmd): one image for both
+machines. WiFi stays out of power saving, and the modem answers at once.
+The board package for building is in [`../TOOLS.md`](../TOOLS.md).
 
-Both are also in the release, see [`../get_binaries.cmd`](../get_binaries.cmd).
-The board packages for building are in [`../TOOLS.md`](../TOOLS.md).
+Until November 2026 there was a second one, built with Bluepad32, that
+paired a game controller on the S3 itself and sent it to the Atari ST
+through a third wire to pin 54. It is gone: it took one gamepad and no
+keyboard or mouse, only on the ST, and with Bluetooth running the WiFi
+driver insists on modem sleep, so that every keystroke to a BBS waited for
+the next wake-up. Bluetooth now always goes through the USB adapter on the
+hub, for keyboards, mice and controllers on both machines.
 
 ## Flash
 
@@ -26,8 +31,7 @@ Take the S3 off the Tang. Of its two USB sockets the one to use is marked
 **UART** (on some boards COM) -- a CH343 chip, VID `1A86`; the other, marked
 USB, is the S3's own, Espressif's `303A`, and is not used here.
 
-    flash_zimodem.cmd               the plain modem
-    flash_zimodem.cmd bt            with Bluetooth
+    flash_zimodem.cmd
 
 The script finds the port itself: when it says so, unplug the S3, then plug
 the cable into its UART socket; the one port that appears is the S3. Knowing

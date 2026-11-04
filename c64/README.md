@@ -295,10 +295,9 @@ UART socket in.
 
 The image is `bin\zimodem-s3-devkitc.bin`, from
 [`..\esp32\build_zimodem.cmd`](../esp32/build_zimodem.cmd) or
-`get_binaries.cmd`. **Take the plain one, not the Bluetooth build** (`bt`):
-with Bluetooth running the WiFi driver insists on modem sleep, and at a BBS
-every keystroke then waited up to seconds for the next wake-up. The C64 core
-does not read Bluetooth controllers yet anyway.
+`get_binaries.cmd`, the same image as for the Atari ST. Bluetooth does not
+go through the S3: keyboards and controllers pair with the USB Bluetooth
+adapter on the hub.
 
 At power-up its debug output on that socket at 115200 says
 `Using BPS 19200, RXD 15, TXD 16`. That socket carries only debug output: the

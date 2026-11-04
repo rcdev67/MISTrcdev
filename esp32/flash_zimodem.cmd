@@ -2,9 +2,8 @@
 rem ---------------------------------------------------------------------------
 rem Flash Zimodem onto the ESP32-S3 DevKitC-1.
 rem
-rem Usage:  flash_zimodem.cmd             the plain modem, the port found
-rem         flash_zimodem.cmd bt          with Bluetooth, see build_zimodem.cmd
-rem         flash_zimodem.cmd COM7 [bt]   the port known
+rem Usage:  flash_zimodem.cmd             the port found
+rem         flash_zimodem.cmd COM7        the port known
 rem
 rem The S3 has two USB sockets. The one to use is marked UART (on some boards
 rem COM): a CH343 chip, Windows sees VID 1A86. The other, marked USB, is the
@@ -19,11 +18,8 @@ rem ---------------------------------------------------------------------------
 setlocal
 call "%~dp0..\paths.cmd"
 
-set PORT=
+set PORT=%~1
 set NAME=zimodem-s3-devkitc.bin
-for %%A in (%*) do (
-  if /i "%%~A"=="bt" ( set NAME=zimodem-s3-devkitc-bluepad32.bin ) else set PORT=%%~A
-)
 if not exist "%BIN%\%NAME%" (
   echo MISSING: %BIN%\%NAME%
   echo Build it with build_zimodem.cmd, or fetch it with ..\get_binaries.cmd
@@ -52,8 +48,9 @@ if errorlevel 1 (
 )
 
 echo.
-echo Done. Put the S3 back on the Tang, power it from its own supply, and join
-echo the network from the machine: atw"Network,Password" then at^&w.
+echo Done. Put the S3 back on the Tang, its 5V and GND on the same 5 V rail as
+echo the Tang, its USB sockets empty, and join the network from the machine:
+echo atw"Network,Password" then at^&w.
 
 :done
 endlocal

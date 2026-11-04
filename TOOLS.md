@@ -36,7 +36,6 @@ Everything above, and:
 | **T-Head RISC-V toolchain** for the BL616 | Xuantie-900 elf newlib gcc **V2.6.1**, gcc 10.2.0, commit `072fc29` | <https://github.com/bouffalolab/toolchain_gcc_t-head_windows>: `git clone https://github.com/bouffalolab/toolchain_gcc_t-head_windows.git` | `C:\fpga\bl616\toolchain_gcc_t-head_windows` |
 | **arduino-cli** -- only for the WiFi modem | **1.4.1** | <https://github.com/arduino/arduino-cli/releases/tag/v1.4.1>. The Arduino IDE 2 brings it too | on PATH, or `set ARDUINO_CLI=` in `paths.local.cmd` |
 | board package **esp32:esp32** | **3.1.1** | `arduino-cli core install esp32:esp32@3.1.1` | |
-| board package **esp32-bluepad32:esp32** -- only the Bluetooth build | **4.1.0** | `arduino-cli config add board_manager.additional_urls https://raw.githubusercontent.com/ricardoquesada/esp32-arduino-lib-builder/master/bluepad32_files/package_esp32_bluepad32_index.json`, then `arduino-cli core install esp32-bluepad32:esp32@4.1.0` | |
 
 **The SDK needs one line changed on Windows.** It links with `-flto`, which
 the Windows toolchain cannot do; the SDK's own README asks for `-fno-lto` on

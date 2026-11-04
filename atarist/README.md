@@ -285,9 +285,10 @@ Home** the right one. On the desktop and in GEM programs, not in games
 that read the mouse themselves.
 
 Until November 2026 a Bluetooth controller paired with the ESP32 instead,
-with the Bluepad32 build of Zimodem and a third wire to pin 54. Bluetooth
-now always goes through the adapter on the hub: the ESP32 runs the plain
-modem, its WiFi is faster without Bluetooth, and pin 54 stays free.
+with a Bluepad32 build of Zimodem and a third wire to pin 54. That build
+is gone: it took one gamepad and no keyboard or mouse, and it slowed the
+WiFi. Bluetooth now always goes through the adapter on the hub, the ESP32
+runs the plain modem, and pin 54 stays free.
 
 ## 9. When something does not work
 
