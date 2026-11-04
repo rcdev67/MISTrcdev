@@ -247,8 +247,55 @@ def zip_of(entry):
     return ""
 
 
+# Folders as they were read, answered from memory. A NAS sends its disks
+# to sleep, and the first look into a folder of 3000 archives then took
+# longer than the modem waits, 15 s: for the first minutes after a pause
+# every list ended in "Modem could not fetch". Now a request is answered
+# from here, and a folder read more than a minute ago is read again in the
+# background, so a game put on the NAS shows up at the next Reload list
+# but one. Nothing here wakes a disk on its own, apart from one walk at
+# start-up.
+LISTING_AGE = 60
+_listings = {}           # path -> (time read, entries)
+_listings_due = set()    # paths being read again right now
+
+
 def listing(path):
     """Every usable entry of a folder, sorted the way the ST sees it."""
+    hit = _listings.get(path)
+    if hit is None:
+        entries = read_listing(path)
+        _listings[path] = (time.time(), entries)
+        return entries
+    if time.time() - hit[0] > LISTING_AGE and path not in _listings_due:
+        _listings_due.add(path)
+        threading.Thread(target=_read_again, args=(path,), daemon=True).start()
+    return hit[1]
+
+
+def _read_again(path):
+    try:
+        _listings[path] = (time.time(), read_listing(path))
+    finally:
+        _listings_due.discard(path)
+
+
+def warm_listings():
+    """Every folder once, at start-up, so the first request finds them."""
+    todo = [ROOT]
+    n = 0
+    while todo:
+        path = todo.pop()
+        for e in listing(path):
+            if e.is_dir:
+                todo.append(e.real)
+        n += 1
+    sys.stdout.write("stserve: %d folders read\n" % n)
+    sys.stdout.flush()
+
+
+def read_listing(path):
+    """listing() without the memory: the folder as it is on the disk."""
     out = []
     names = set()
     try:
@@ -1476,6 +1523,7 @@ def main(argv):
                      % (SYSTEM, ("cached in " + CACHE) if CACHE else "off: no ST_CACHE"))
     sys.stdout.flush()
     catalogue.get()
+    threading.Thread(target=warm_listings, daemon=True).start()
     try:
         Server(("", PORT), Handler).serve_forever()
     except KeyboardInterrupt:

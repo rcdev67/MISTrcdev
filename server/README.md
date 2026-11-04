@@ -199,6 +199,7 @@ All of them are optional; the defaults are what the companion can handle.
 |---|---|
 | `List is empty` | the folder holds nothing the core can read, or everything in it is hidden. `ST_HIDE` too eager, or a folder of `.stx` |
 | `Modem could not fetch` | the modem did not reach the server: wrong address in `server=`, or the NAS's firewall. Try the address in a browser first |
+| `Modem could not fetch` only for the first minutes after a pause | a NAS whose disks were asleep took longer than the modem waits, 15 s. stserve now keeps every folder in memory, reads them all once when it starts (`stserve: N folders read` in the log) and answers from there; a folder is read again in the background a minute after it was last read, so a game put on the NAS shows up at the next *Reload list* but one. Only fetching a file still needs the disk |
 | the menu shows folders, not files | that is the collection's own structure; walk in with the knob, `..` goes back up |
 | a name shows up twice with `~2` | two files of the folder shorten to the same name. Both work |
 | `permission denied` in the container log | the files belong to another user on the NAS. Put that user's id into `user:` in the compose file, or let the group read the folder |
