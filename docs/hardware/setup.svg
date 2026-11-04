@@ -35,10 +35,12 @@
 <circle cx="585" cy="227" r="4" fill="#d62828"/>
 <circle cx="585" cy="241" r="4" fill="#222222"/>
 <circle cx="585" cy="297" r="4" fill="#2b8a3e"/>
+<circle cx="585" cy="325" r="4" fill="#2b8a3e"/>
 <circle cx="585" cy="339" r="4" fill="#2b8a3e"/>
 <text x="570" y="231" font-size="10" fill="#fff" text-anchor="end" font-weight="bold">5V</text>
 <text x="570" y="245" font-size="10" fill="#fff" text-anchor="end" font-weight="bold">GND</text>
 <text x="570" y="301" font-size="10" fill="#fff" text-anchor="end" font-weight="bold">41</text>
+<text x="570" y="329" font-size="10" fill="#fff" text-anchor="end" font-weight="bold">54</text>
 <text x="570" y="343" font-size="10" fill="#fff" text-anchor="end" font-weight="bold">51</text>
 <rect x="40" y="420" width="260" height="100" rx="6" fill="#f8f9fa" stroke="#999" stroke-width="2"/>
 <text x="170" y="440" font-size="13" fill="#444" text-anchor="middle" font-weight="bold">breadboard rail</text>
@@ -64,26 +66,30 @@
 <path d="M280 500 L342 500 L342 182" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
 <path d="M342 182 L492 182 A8 8 0 0 1 508 182 L637 182" fill="none" stroke="#222222" stroke-width="3"/>
 <path d="M637 182 L637 241 L585 241" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
-<rect x="720" y="300" width="240" height="170" rx="10" fill="#1d3b5a" stroke="none" stroke-width="2"/>
+<rect x="720" y="300" width="240" height="190" rx="10" fill="#1d3b5a" stroke="none" stroke-width="2"/>
 <text x="840" y="328" font-size="16" fill="#fff" text-anchor="middle" font-weight="bold">ESP32-S3 DevKitC-1</text>
 <text x="840" y="347" font-size="12.5" fill="#cfe0f0" text-anchor="middle">the WiFi modem, Zimodem</text>
 <text x="840" y="364" font-size="12.5" fill="#cfe0f0" text-anchor="middle">N16R8; the 1U takes an</text>
 <text x="840" y="381" font-size="12.5" fill="#cfe0f0" text-anchor="middle">external antenna</text>
 <circle cx="720" cy="410" r="4" fill="#2b8a3e"/>
 <text x="728" y="414" font-size="10.5" fill="#fff" text-anchor="start" font-weight="bold">GPIO16</text>
-<circle cx="720" cy="428" r="4" fill="#2b8a3e"/>
-<text x="728" y="432" font-size="10.5" fill="#fff" text-anchor="start" font-weight="bold">GPIO15</text>
-<circle cx="720" cy="446" r="4" fill="#d62828"/>
-<text x="728" y="450" font-size="10.5" fill="#fff" text-anchor="start" font-weight="bold">5V</text>
-<circle cx="720" cy="462" r="4" fill="#222222"/>
-<text x="728" y="466" font-size="10.5" fill="#fff" text-anchor="start" font-weight="bold">GND</text>
-<path d="M720 410 L660 410 L660 297 L585 297" fill="none" stroke="#2b8a3e" stroke-width="3" stroke-linejoin="round"/>
-<path d="M720 428 L680 428 L680 339 L585 339" fill="none" stroke="#2b8a3e" stroke-width="3" stroke-linejoin="round"/>
-<text x="840" y="492" font-size="12" fill="#2b8a3e" text-anchor="middle">GPIO16 to pin 41, GPIO15 to pin 51,</text>
-<text x="840" y="508" font-size="12" fill="#555" text-anchor="middle">see wiring.svg</text>
-<path d="M290 455 L290 650 L700 650 L700 446 L720 446" fill="none" stroke="#d62828" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="720" cy="426" r="4" fill="#2b8a3e"/>
+<text x="728" y="430" font-size="10.5" fill="#fff" text-anchor="start" font-weight="bold">GPIO17</text>
+<circle cx="720" cy="442" r="4" fill="#2b8a3e"/>
+<text x="728" y="446" font-size="10.5" fill="#fff" text-anchor="start" font-weight="bold">GPIO15</text>
+<circle cx="720" cy="458" r="4" fill="#d62828"/>
+<text x="728" y="462" font-size="10.5" fill="#fff" text-anchor="start" font-weight="bold">5V</text>
+<circle cx="720" cy="474" r="4" fill="#222222"/>
+<text x="728" y="478" font-size="10.5" fill="#fff" text-anchor="start" font-weight="bold">GND</text>
+<text x="790" y="430" font-size="10.5" fill="#cfe0f0" text-anchor="start">Bluetooth build, ST</text>
+<path d="M720 410 L690 410 L690 297 L585 297" fill="none" stroke="#2b8a3e" stroke-width="3" stroke-linejoin="round"/>
+<path d="M720 426 L675 426 L675 325 L585 325" fill="none" stroke="#2b8a3e" stroke-width="3" stroke-linejoin="round"/>
+<path d="M720 442 L660 442 L660 339 L585 339" fill="none" stroke="#2b8a3e" stroke-width="3" stroke-linejoin="round"/>
+<text x="840" y="510" font-size="12" fill="#2b8a3e" text-anchor="middle">GPIO16 to pin 41, GPIO17 to pin 54,</text>
+<text x="840" y="526" font-size="12" fill="#2b8a3e" text-anchor="middle">GPIO15 to pin 51; see wiring.svg</text>
+<path d="M290 455 L290 650 L700 650 L700 458 L720 458" fill="none" stroke="#d62828" stroke-width="3" stroke-linejoin="round"/>
 <circle cx="290" cy="455" r="4.5" fill="#d62828"/>
-<path d="M270 500 L270 662 L710 662 L710 462 L720 462" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+<path d="M270 500 L270 662 L710 662 L710 474 L720 474" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
 <circle cx="270" cy="500" r="4.5" fill="#222222"/>
 <text x="500" y="642" font-size="12" fill="#444" text-anchor="middle">to the S3's 5V pin, never to its 3V3</text>
 <path d="M500 530 L500 560" fill="none" stroke="#555" stroke-width="4" stroke-linejoin="round"/>

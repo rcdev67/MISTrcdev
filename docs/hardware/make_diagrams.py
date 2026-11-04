@@ -106,11 +106,12 @@ def setup():
     s.text(450, 456, 'in before power-up', 11, '#d8eadb', 'start')
     s.rect(576, 220, 18, 285, '#1f4d28', rx=3)
     pin_y = {name: 227 + 14 * i for i, name in enumerate(RIGHT)}
-    for name in ('5V', 'GND', '41', '51'):
+    for name in ('5V', 'GND', '41', '54', '51'):
         s.dot(585, pin_y[name] if name != 'GND' else 241, {'5V': RED, 'GND': BLACK}.get(name, GREEN), 4)
     s.text(570, 231, '5V', 10, '#fff', 'end', True)
     s.text(570, 245, 'GND', 10, '#fff', 'end', True)
     s.text(570, 301, '41', 10, '#fff', 'end', True)
+    s.text(570, 329, '54', 10, '#fff', 'end', True)
     s.text(570, 343, '51', 10, '#fff', 'end', True)
 
     # --- the supply and the rail, bottom left
@@ -142,22 +143,25 @@ def setup():
     s.line([(637, 182), (637, 241), (585, 241)], BLACK, 3)
 
     # --- the ESP32, right
-    s.rect(720, 300, 240, 170, CHIP, rx=10)
+    s.rect(720, 300, 240, 190, CHIP, rx=10)
     s.text(840, 328, 'ESP32-S3 DevKitC-1', 16, '#fff', bold=True)
     s.text(840, 347, 'the WiFi modem, Zimodem', 12.5, '#cfe0f0')
     s.text(840, 364, 'N16R8; the 1U takes an', 12.5, '#cfe0f0')
     s.text(840, 381, 'external antenna', 12.5, '#cfe0f0')
-    for name, y, colour in (('GPIO16', 410, GREEN), ('GPIO15', 428, GREEN), ('5V', 446, RED), ('GND', 462, BLACK)):
+    for name, y, colour in (('GPIO16', 410, GREEN), ('GPIO17', 426, GREEN), ('GPIO15', 442, GREEN),
+                            ('5V', 458, RED), ('GND', 474, BLACK)):
         s.dot(720, y, colour, 4)
         s.text(728, y + 4, name, 10.5, '#fff', 'start', True)
-    s.line([(720, 410), (660, 410), (660, 297), (585, 297)], GREEN, 3)
-    s.line([(720, 428), (680, 428), (680, 339), (585, 339)], GREEN, 3)
-    s.text(840, 492, 'GPIO16 to pin 41, GPIO15 to pin 51,', 12, GREEN)
-    s.text(840, 508, 'see wiring.svg', 12, '#555')
+    s.text(790, 430, 'Bluetooth build, ST', 10.5, '#cfe0f0', 'start')
+    s.line([(720, 410), (690, 410), (690, 297), (585, 297)], GREEN, 3)
+    s.line([(720, 426), (675, 426), (675, 325), (585, 325)], GREEN, 3)
+    s.line([(720, 442), (660, 442), (660, 339), (585, 339)], GREEN, 3)
+    s.text(840, 510, 'GPIO16 to pin 41, GPIO17 to pin 54,', 12, GREEN)
+    s.text(840, 526, 'GPIO15 to pin 51; see wiring.svg', 12, GREEN)
     # its supply from the same rail, along the bottom
-    s.line([(290, 455), (290, 650), (700, 650), (700, 446), (720, 446)], RED, 3)
+    s.line([(290, 455), (290, 650), (700, 650), (700, 458), (720, 458)], RED, 3)
     s.dot(290, 455, RED)
-    s.line([(270, 500), (270, 662), (710, 662), (710, 462), (720, 462)], BLACK, 3)
+    s.line([(270, 500), (270, 662), (710, 662), (710, 474), (720, 474)], BLACK, 3)
     s.dot(270, 500, BLACK)
     s.text(500, 642, "to the S3's 5V pin, never to its 3V3", 12, '#444')
 
@@ -189,12 +193,12 @@ def wiring():
         if p == 'GND':
             gnd_rows.append(y)
         colour = {'5V': RED, 'GND': BLACK, '3V3': ORANGE, '41': GREEN, '51': GREEN,
-                  '48': BLUE, '56': AMBER}.get(p, GREY)
+                  '54': GREEN, '48': BLUE, '56': AMBER}.get(p, GREY)
         fg = '#000' if colour in (GREY, AMBER) else '#fff'
         s.rect(px - 22, y - 12, 44, 24, colour, '#333', rx=3, sw=1)
         s.text(px, y + 5, p, 13, fg, bold=True)
     notes = {'5V': '5 V in, from the rail', '41': 'modem sends here', '51': 'modem receives here',
-             '56': 'leave free (low: companion off)', '54': 'ESP32 GPIO17, its Bluetooth build only',
+             '56': 'leave free (low: companion off)', '54': 'Bluetooth controller from the modem',
              '48': 'companion console out, 2,000,000 baud', '55': 'console in, not needed',
              '3V3': 'not for the ESP32'}
     for p, n in notes.items():
@@ -216,21 +220,22 @@ def wiring():
 
     # the ESP32
     ex, ey = 720, 150
-    s.rect(ex, ey, 240, 330, CHIP, rx=10)
+    s.rect(ex, ey, 240, 360, CHIP, rx=10)
     s.text(ex + 120, ey + 28, 'ESP32-S3 DevKitC-1', 16, '#fff', bold=True)
     s.text(ex + 120, ey + 47, 'pins by function: find them', 12, '#cfe0f0')
     s.text(ex + 120, ey + 63, 'on its silkscreen', 12, '#cfe0f0')
-    s.rect(ex + 50, ey + 250, 140, 60, '#8a97a3', '#5c6770', rx=6)
-    s.text(ex + 120, ey + 285, 'antenna end', 12, '#fff')
-    spins = [('5V', RED, 120), ('GND', BLACK, 150), ('GPIO16', GREEN, 200), ('GPIO15', GREEN, 230)]
+    s.rect(ex + 50, ey + 285, 140, 60, '#8a97a3', '#5c6770', rx=6)
+    s.text(ex + 120, ey + 320, 'antenna end', 12, '#fff')
+    spins = [('5V', RED, 120), ('GND', BLACK, 150), ('GPIO16', GREEN, 200), ('GPIO17', GREEN, 230),
+             ('GPIO15', GREEN, 260)]
     sy = {}
     for name, colour, dy in spins:
         y = ey + dy
         sy[name] = y
         s.rect(ex - 10, y - 11, 72, 22, colour, '#333', rx=3, sw=1)
         s.text(ex + 26, y + 5, name, 12, '#fff', bold=True)
-    s.text(ex + 120, ey + 195, 'not 3V3: 5 V there', 11.5, '#ffb3b3')
-    s.text(ex + 120, ey + 210, 'destroys the S3', 11.5, '#ffb3b3')
+    s.text(ex + 72, ey + 131, 'not 3V3: 5 V there', 11.5, '#ffb3b3', 'start')
+    s.text(ex + 72, ey + 155, 'destroys the S3', 11.5, '#ffb3b3', 'start')
     # power from the rail
     s.line([(rx - 8, sy['5V']), (ex - 10, sy['5V'])], RED, 3)
     s.dot(rx - 8, sy['5V'], RED)
@@ -238,7 +243,10 @@ def wiring():
     s.dot(rx + 8, sy['GND'], BLACK)
     # the two signal wires, crossing the rail
     s.line([(ex - 10, sy['GPIO16']), (630, sy['GPIO16']), (630, ypin['41']), (px + 22, ypin['41'])], GREEN, 3)
-    s.line([(ex - 10, sy['GPIO15']), (650, sy['GPIO15']), (650, ypin['51']), (px + 22, ypin['51'])], GREEN, 3)
+    s.line([(ex - 10, sy['GPIO17']), (650, sy['GPIO17']), (650, ypin['54']), (px + 22, ypin['54'])], GREEN, 3)
+    s.line([(ex - 10, sy['GPIO15']), (670, sy['GPIO15']), (670, ypin['51']), (px + 22, ypin['51'])], GREEN, 3)
+    s.text(ex + 72, sy['GPIO17'] + 4, 'only its Bluetooth build', 11, '#cfe0f0', 'start')
+    s.text(ex + 72, sy['GPIO17'] + 18, 'uses it, on the ST', 11, '#cfe0f0', 'start')
 
     # the console adapter
     cx, cy = 720, 560
@@ -255,7 +263,7 @@ def wiring():
     g2 = gnd_rows[1]
     s.line([(cx + 100, cy + 102), (cx + 100, cy + 118), (600, cy + 118), (600, g2), (px + 22, g2)], BLACK, 3)
 
-    s.text(500, 835, 'With the Bluetooth adapter on the hub, pin 54 stays free. The ESP32 needs nothing else: its USB socket stays empty.',
+    s.text(500, 835, 'GPIO17 carries a controller paired with the S3 to the ST. The ESP32 needs nothing else: its USB socket stays empty.',
            13, '#444')
     s.save('wiring.svg')
 

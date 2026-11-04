@@ -18,8 +18,8 @@
 <text x="430" y="299" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">41</text>
 <rect x="408" y="314" width="44" height="24" rx="3" fill="#e9c46a" stroke="#333" stroke-width="1"/>
 <text x="430" y="331" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">56</text>
-<rect x="408" y="346" width="44" height="24" rx="3" fill="#e9ecef" stroke="#333" stroke-width="1"/>
-<text x="430" y="363" font-size="13" fill="#000" text-anchor="middle" font-weight="bold">54</text>
+<rect x="408" y="346" width="44" height="24" rx="3" fill="#2b8a3e" stroke="#333" stroke-width="1"/>
+<text x="430" y="363" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">54</text>
 <rect x="408" y="378" width="44" height="24" rx="3" fill="#2b8a3e" stroke="#333" stroke-width="1"/>
 <text x="430" y="395" font-size="13" fill="#fff" text-anchor="middle" font-weight="bold">51</text>
 <rect x="408" y="410" width="44" height="24" rx="3" fill="#1c5fb8" stroke="#333" stroke-width="1"/>
@@ -48,7 +48,7 @@
 <text x="400" y="299" font-size="12" fill="#fff" text-anchor="end">modem sends here</text>
 <text x="400" y="395" font-size="12" fill="#fff" text-anchor="end">modem receives here</text>
 <text x="400" y="331" font-size="12" fill="#fff" text-anchor="end">leave free (low: companion off)</text>
-<text x="400" y="363" font-size="12" fill="#fff" text-anchor="end">ESP32 GPIO17, its Bluetooth build only</text>
+<text x="400" y="363" font-size="12" fill="#fff" text-anchor="end">Bluetooth controller from the modem</text>
 <text x="400" y="427" font-size="12" fill="#fff" text-anchor="end">companion console out, 2,000,000 baud</text>
 <text x="400" y="459" font-size="12" fill="#fff" text-anchor="end">console in, not needed</text>
 <text x="400" y="619" font-size="12" fill="#fff" text-anchor="end">not for the ESP32</text>
@@ -62,12 +62,12 @@
 <circle cx="568" cy="166" r="4.5" fill="#222222"/>
 <text x="560" y="778" font-size="12" fill="#444" text-anchor="middle">+5 V and GND from the supply,</text>
 <text x="560" y="794" font-size="12" fill="#444" text-anchor="middle">470 µF across them</text>
-<rect x="720" y="150" width="240" height="330" rx="10" fill="#1d3b5a" stroke="none" stroke-width="2"/>
+<rect x="720" y="150" width="240" height="360" rx="10" fill="#1d3b5a" stroke="none" stroke-width="2"/>
 <text x="840" y="178" font-size="16" fill="#fff" text-anchor="middle" font-weight="bold">ESP32-S3 DevKitC-1</text>
 <text x="840" y="197" font-size="12" fill="#cfe0f0" text-anchor="middle">pins by function: find them</text>
 <text x="840" y="213" font-size="12" fill="#cfe0f0" text-anchor="middle">on its silkscreen</text>
-<rect x="770" y="400" width="140" height="60" rx="6" fill="#8a97a3" stroke="#5c6770" stroke-width="2"/>
-<text x="840" y="435" font-size="12" fill="#fff" text-anchor="middle">antenna end</text>
+<rect x="770" y="435" width="140" height="60" rx="6" fill="#8a97a3" stroke="#5c6770" stroke-width="2"/>
+<text x="840" y="470" font-size="12" fill="#fff" text-anchor="middle">antenna end</text>
 <rect x="710" y="259" width="72" height="22" rx="3" fill="#d62828" stroke="#333" stroke-width="1"/>
 <text x="746" y="275" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold">5V</text>
 <rect x="710" y="289" width="72" height="22" rx="3" fill="#222222" stroke="#333" stroke-width="1"/>
@@ -75,15 +75,20 @@
 <rect x="710" y="339" width="72" height="22" rx="3" fill="#2b8a3e" stroke="#333" stroke-width="1"/>
 <text x="746" y="355" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold">GPIO16</text>
 <rect x="710" y="369" width="72" height="22" rx="3" fill="#2b8a3e" stroke="#333" stroke-width="1"/>
-<text x="746" y="385" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold">GPIO15</text>
-<text x="840" y="345" font-size="11.5" fill="#ffb3b3" text-anchor="middle">not 3V3: 5 V there</text>
-<text x="840" y="360" font-size="11.5" fill="#ffb3b3" text-anchor="middle">destroys the S3</text>
+<text x="746" y="385" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold">GPIO17</text>
+<rect x="710" y="399" width="72" height="22" rx="3" fill="#2b8a3e" stroke="#333" stroke-width="1"/>
+<text x="746" y="415" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold">GPIO15</text>
+<text x="792" y="281" font-size="11.5" fill="#ffb3b3" text-anchor="start">not 3V3: 5 V there</text>
+<text x="792" y="305" font-size="11.5" fill="#ffb3b3" text-anchor="start">destroys the S3</text>
 <path d="M552 270 L710 270" fill="none" stroke="#d62828" stroke-width="3" stroke-linejoin="round"/>
 <circle cx="552" cy="270" r="4.5" fill="#d62828"/>
 <path d="M568 300 L710 300" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
 <circle cx="568" cy="300" r="4.5" fill="#222222"/>
 <path d="M710 350 L630 350 L630 294 L452 294" fill="none" stroke="#2b8a3e" stroke-width="3" stroke-linejoin="round"/>
-<path d="M710 380 L650 380 L650 390 L452 390" fill="none" stroke="#2b8a3e" stroke-width="3" stroke-linejoin="round"/>
+<path d="M710 380 L650 380 L650 358 L452 358" fill="none" stroke="#2b8a3e" stroke-width="3" stroke-linejoin="round"/>
+<path d="M710 410 L670 410 L670 390 L452 390" fill="none" stroke="#2b8a3e" stroke-width="3" stroke-linejoin="round"/>
+<text x="792" y="384" font-size="11" fill="#cfe0f0" text-anchor="start">only its Bluetooth build</text>
+<text x="792" y="398" font-size="11" fill="#cfe0f0" text-anchor="start">uses it, on the ST</text>
 <rect x="720" y="560" width="240" height="120" rx="8" fill="#fff" stroke="#666" stroke-width="2"/>
 <text x="840" y="586" font-size="16" fill="#222" text-anchor="middle" font-weight="bold">USB serial adapter</text>
 <text x="840" y="605" font-size="12" fill="#555" text-anchor="middle">only when something is wrong:</text>
@@ -95,5 +100,5 @@
 <text x="905" y="656" font-size="12" fill="#b00" text-anchor="middle">never 5V</text>
 <path d="M710 651 L610 651 L610 422 L452 422" fill="none" stroke="#1c5fb8" stroke-width="3" stroke-linejoin="round"/>
 <path d="M820 662 L820 678 L600 678 L600 582 L452 582" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
-<text x="500" y="835" font-size="13" fill="#444" text-anchor="middle">With the Bluetooth adapter on the hub, pin 54 stays free. The ESP32 needs nothing else: its USB socket stays empty.</text>
+<text x="500" y="835" font-size="13" fill="#444" text-anchor="middle">GPIO17 carries a controller paired with the S3 to the ST. The ESP32 needs nothing else: its USB socket stays empty.</text>
 </svg>
