@@ -81,7 +81,10 @@ on the FTDI driver:
 | WinUSB | [`flash/flash_c64_tn20k_openfpgaloader.cmd`](flash/flash_c64_tn20k_openfpgaloader.cmd) | yes |
 
 Windows binds the driver **per device**, not per type — the composite device
-carries a serial number. Two Tang boards can therefore be bound differently.
+carries a serial number. Two Tang boards can therefore be bound differently --
+unless they carry the same one: a 3921 and a 3923 here both report
+`2025030317` with the FPGA Partner on their BL616, and Windows then gives
+both the driver it chose for the first.
 Zadig changes it, *Options → List All Devices*, and **interface 0 only**;
 Gowin's programmer then continues to work with `--cable-index 5`.
 
