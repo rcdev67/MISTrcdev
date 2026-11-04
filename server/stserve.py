@@ -619,7 +619,7 @@ def gamelist(folder):
 class Game:
     __slots__ = ("id", "title", "year", "publisher", "marks", "folder",
                  "real", "_name", "ext", "key", "stem", "desc", "genre",
-                 "players", "pics")
+                 "players", "pics", "disks", "set")
 
     @property
     def name(self):
@@ -643,7 +643,36 @@ class Game:
                 "publisher": self.publisher, "marks": self.marks,
                 "folder": self.folder, "name": self.name,
                 "genre": self.genre, "players": self.players,
-                "desc": self.desc[:2000]}
+                "desc": self.desc[:2000], "disks": len(self.set) if self.set else 1}
+
+
+# The disks of one set, "(Disk 1 of 3)" ... or "(Side A)", "(Side B)": the
+# catalogue shows the first, and sending it sends them all, in order.
+def disk_number(stem):
+    m = _DISK.search(stem)
+    if m:
+        return int(m.group(1))
+    m = _SIDE.search(stem)
+    if m:
+        s = m.group(1).lower()
+        return ord(s) - ord("a") + 1 if s.isalpha() else int(s)
+    return 0
+
+
+def disk_sets(games):
+    """Every game gets .set: the ids of its set in order, None if alone."""
+    sets = {}
+    for g in games:
+        g.set = None
+        if disk_number(g.stem):
+            sets.setdefault((g.folder, _SIDE_MARKS.sub("", g.stem).strip().lower()), []).append(g)
+    for members in sets.values():
+        if len(members) < 2:
+            continue
+        members.sort(key=lambda g: disk_number(g.stem))
+        ids = [g.id for g in members]
+        for g in members:
+            g.set = ids
 
 
 class Catalogue:
@@ -706,6 +735,7 @@ class Catalogue:
         except OSError:
             pass
         games.sort(key=lambda g: (g.key, g.year, g.stem.lower()))
+        disk_sets(games)
         with self.lock:
             self.games = games
             self.by_id = {g.id: g for g in games}
@@ -967,8 +997,20 @@ def state():
     return {"sent": [g.to_json() for g in sent.games()], "favourites": list(favourites.ids)}
 
 
-def query_games(q, letter, start, n, fav=False):
-    games = catalogue.get()
+# A TOSEC collection files its disks under Games, Applications, Demos,
+# Compilations and more. libretro has pictures for nearly every game and
+# for hardly anything else, so a single overview was half empty frames:
+# the page shows one category at a time, Games first.
+DEFAULT_CATEGORY = "Games"
+
+
+def category(g):
+    return g.folder.split("/", 1)[0] if g.folder else ""
+
+
+def query_games(q, letter, start, n, fav=False, cat=None):
+    # a set of disks is shown once, as its first disk
+    games = [g for g in catalogue.get() if not g.set or g.set[0] == g.id]
     if fav:
         ids = set(favourites.ids)
         games = [g for g in games if g.id in ids]
@@ -981,7 +1023,20 @@ def query_games(q, letter, start, n, fav=False):
             games = [g for g in games if not g.key[:1].isalpha()]
         else:
             games = [g for g in games if g.key[:1] == letter.lower()]
+    # how many of what is found are in each category, then the one chosen;
+    # none chosen yet means Games when there are any. Favourites are all
+    # shown, whatever their category.
+    counts = {}
+    for g in games:
+        c = category(g)
+        counts[c] = counts.get(c, 0) + 1
+    cats = sorted(counts.items(), key=lambda kv: (kv[0] != DEFAULT_CATEGORY, -kv[1], kv[0]))
+    if cat is None:
+        cat = DEFAULT_CATEGORY if DEFAULT_CATEGORY in counts and len(counts) > 1 else "*"
+    if cat != "*" and not fav:
+        games = [g for g in games if category(g) == cat]
     out = {"total": len(games), "ready": catalogue.when > 0,
+           "cats": cats if len(cats) > 1 else [], "cat": cat,
            "games": [g.to_json() for g in games[start:start + n]],
            "pictures": bool(CACHE), "title": TITLE}
     out.update(state())
@@ -1015,6 +1070,13 @@ h1 small { color:var(--dim); font-weight:normal; }
   background:var(--panel); color:var(--text); border:1px solid var(--line);
   border-radius:4px; cursor:pointer; }
 #letters button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+#cats { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+#cats[hidden] { display:none; }
+#cats button { padding:4px 10px; font:inherit; font-size:13px; background:var(--panel);
+  color:var(--text); border:1px solid var(--line); border-radius:14px; cursor:pointer; }
+#cats button small { color:var(--dim); margin-left:4px; }
+#cats button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+#cats button.on small { color:#fffc; }
 #sent { margin-top:8px; font-size:13px; color:var(--dim); }
 #sent span.g { display:inline-block; margin:2px 4px 2px 0; padding:2px 8px;
   background:var(--panel); border:1px solid var(--ok); border-radius:12px; color:var(--text); }
@@ -1031,6 +1093,12 @@ main { padding:16px; }
 .pic { aspect-ratio:4/3; background:#000 center/contain no-repeat;
        display:flex; align-items:center; justify-content:center;
        color:#555; font-size:28px; font-weight:bold; }
+/* no picture anywhere: the title on a quiet field, the category above it */
+.pic.none { flex-direction:column; gap:6px; padding:10px; text-align:center;
+            background:linear-gradient(160deg, var(--line), var(--panel)); color:var(--text);
+            font-size:14px; font-weight:600; line-height:1.25; overflow:hidden; }
+.pic.none small { color:var(--dim); font-size:11px; font-weight:normal;
+                  text-transform:uppercase; letter-spacing:.08em; }
 .card .t { padding:6px 8px 0; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .card .s { padding:0 8px 8px; font-size:12px; color:var(--dim); overflow:hidden;
            text-overflow:ellipsis; white-space:nowrap; }
@@ -1054,6 +1122,7 @@ main { padding:16px; }
 <header>
   <h1>__TITLE__ <small id="count"></small></h1>
   <input id="q" type="search" placeholder="Search: title, publisher or year" autocomplete="off">
+  <div id="cats" hidden></div>
   <div id="letters"></div>
   <div id="sent"></div>
 </header>
@@ -1072,16 +1141,23 @@ main { padding:16px; }
 <script>
 const $ = id => document.getElementById(id);
 let q = "", letter = "", start = 0, total = 0, timer = null, current = null;
-let favs = new Set(), onlyFav = false;
+let favs = new Set(), onlyFav = false, cat = null;
 const N = 60;
 
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]); }
-function line(g) { return [g.year, g.publisher, g.marks].filter(x => x).join(" · "); }
+function line(g) {
+  const marks = g.disks > 1 ? g.disks + " disks" : g.marks;
+  return [g.year, g.publisher, marks].filter(x => x).join(" · ");
+}
 
 function picture(el, g, kinds) {
   // the first picture libretro has for it, the title's letters otherwise
   const k = kinds.shift();
-  if (!k) { el.textContent = (g.title.match(/[A-Za-z0-9]/g) || ["?"]).slice(0, 2).join("").toUpperCase(); return; }
+  if (!k) {
+    el.className = "pic none";
+    el.innerHTML = (g.folder ? "<small>" + esc(g.folder.split("/")[0]) + "</small>" : "") + esc(g.title);
+    return;
+  }
   const img = new Image();
   img.onload = () => { el.style.backgroundImage = "url('" + img.src + "')"; el.textContent = ""; };
   img.onerror = () => picture(el, g, kinds);
@@ -1130,17 +1206,33 @@ function showSent(list) {
 function load(reset) {
   if (reset) { start = 0; $("grid").innerHTML = ""; }
   const u = "/_/api/games?q=" + encodeURIComponent(q) + "&letter=" + encodeURIComponent(letter) +
-            "&start=" + start + "&n=" + N + (onlyFav ? "&fav=1" : "");
+            "&start=" + start + "&n=" + N + (onlyFav ? "&fav=1" : "") +
+            (cat !== null ? "&cat=" + encodeURIComponent(cat) : "");
   fetch(u).then(r => r.json()).then(d => {
     document.title = d.title; total = d.total;
     if (!d.ready) { $("info").textContent = "Reading the collection ..."; setTimeout(() => load(true), 1500); return; }
-    $("count").textContent = total + (total == 1 ? " game" : " games");
+    $("count").textContent = total + (total == 1 ? " entry" : " entries");
+    cat = d.cat;
+    showCats(d.cats);
     $("info").textContent = total ? "" : (onlyFav ? "No favourites yet: the star on a game makes it one." : "Nothing found.");
     favs = new Set(d.favourites);
     d.games.forEach(g => $("grid").appendChild(card(g)));
     start += d.games.length;
     $("more").hidden = start >= total;
     showSent(d.sent);
+  });
+}
+
+function showCats(list) {
+  // only for a collection filed in more than one folder; "All" last
+  $("cats").hidden = !list.length || onlyFav;
+  $("cats").innerHTML = "";
+  list.concat([["*", list.reduce((a, c) => a + c[1], 0)]]).forEach(([name, n]) => {
+    const b = document.createElement("button");
+    b.innerHTML = esc(name === "*" ? "All" : (name || "Other")) + "<small>" + n + "</small>";
+    if (name === cat) b.className = "on";
+    b.onclick = () => { cat = name; load(true); };
+    $("cats").appendChild(b);
   });
 }
 
@@ -1164,14 +1256,16 @@ $("send").onclick = () => fetch("/_/send?id=" + current.id, { method: "POST" })
   .then(r => r.json()).then(st => {
     apply(st);
     $("hint").textContent = "On the computer: Shift+F12, Download..., Reload list -- " +
-                            "> " + current.name + " is at the top.";
+                            "> " + current.name + " is at the top" +
+                            (current.disks > 1 ? ", the other " + (current.disks - 1) + " disks right below." : ".");
   });
 $("fav").onclick = () => { toggleFav(current); };
 $("close").onclick = () => $("detail").style.display = "none";
 $("detail").onclick = e => { if (e.target === $("detail")) $("detail").style.display = "none"; };
 document.onkeydown = e => { if (e.key === "Escape") $("detail").style.display = "none"; };
 $("more").onclick = () => load(false);
-$("q").oninput = () => { clearTimeout(timer); timer = setTimeout(() => { q = $("q").value.trim(); load(true); }, 250); };
+// a new search starts in Games when it finds games there, in all of them otherwise
+$("q").oninput = () => { clearTimeout(timer); timer = setTimeout(() => { q = $("q").value.trim(); cat = null; load(true); }, 250); };
 
 ["\u2605"].concat("#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("")).concat([""]).forEach(l => {
   const b = document.createElement("button");
@@ -1321,8 +1415,11 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         url = urllib.parse.urlsplit(self.path)
         gid = urllib.parse.parse_qs(url.query).get("id", [""])[0]
-        if url.path == "/_/send" and catalogue.find(gid):
-            sent.add(gid)
+        g = catalogue.find(gid) if gid else None
+        if url.path == "/_/send" and g:
+            # all disks of a set, the first one on top of the list
+            for one in reversed(g.set or [gid]):
+                sent.add(one)
         elif url.path == "/_/unsend":
             sent.remove(gid)
         elif url.path == "/_/fav" and catalogue.find(gid):
@@ -1362,7 +1459,8 @@ class Handler(BaseHTTPRequestHandler):
                     return d
             data = query_games(qs.get("q", [""])[0], qs.get("letter", [""])[0][:1],
                                num("start", 0), min(num("n", 60), 200),
-                               qs.get("fav", [""])[0] == "1")
+                               qs.get("fav", [""])[0] == "1",
+                               qs["cat"][0] if "cat" in qs else None)
             return self.send_data(json.dumps(data).encode(), "application/json", body)
         if parts[1:2] == ["img"] and len(parts) == 4 and parts[3] in THUMB_KINDS:
             g = catalogue.find(parts[2])

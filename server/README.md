@@ -76,6 +76,17 @@ the modem: every game of every folder on one page, with year and publisher
 from its TOSEC name, a search box, a bar of first letters, and pictures --
 screenshot, title screen, box and logo where there are any.
 
+- **One category at a time.** A TOSEC set files its disks under Games,
+  Applications, Demos, Compilations and more, and the page starts with
+  **Games**; the bar above the letters switches to the others, *All* shows
+  everything. libretro has a picture for nearly every game of an ST set,
+  99 % of them, and for hardly anything else: what has no picture shows
+  its title and category on a plain card instead. A search starts in
+  Games when it finds games, otherwise in all categories, and the bar
+  says how many it found in each.
+- **A set of disks once**: "(Disk 1 of 3)" ... is shown as its first disk,
+  marked *3 disks*, and sending it sends all three, the first on top.
+
 - **Send to the computer**, in a game's view: the game is offered at the
   top of every list the companion fetches, marked `> `. On the computer:
   Shift+F12, *Download...*, *Reload list*, and it is the first entry. Once
@@ -90,7 +101,7 @@ after the TOSEC sets. stserve fetches a picture the first time a page shows
 it and keeps it in `ST_CACHE`; the first one takes a few seconds longer,
 as it loads libretro's list of names (some 30 MB, kept for a month). A
 game whose name matches no picture exactly is matched by title and year,
-then by title alone; one that matches nothing shows its initials. The
+then by title alone; one that matches nothing shows its title on a card. The
 pictures are not part of this repository, and they stay on your NAS.
 
 Sent games and favourites are kept in `ST_CACHE` as well, so they survive
