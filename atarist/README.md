@@ -81,6 +81,11 @@ recorded place and route options.
    there last, also by someone before you; flash your own over it.
 3. **Flash the core and the TOS images** with
    [`flash\flash_atarist.cmd`](flash/flash_atarist.cmd), the board on the PC.
+   A board on the WinUSB driver -- Gowin's programmer finds no device there --
+   takes [`flash\flash_atarist_openfpgaloader.cmd`](flash/flash_atarist_openfpgaloader.cmd)
+   instead; it backs up the whole flash, TOS images included, into
+   `atarist\backup\` first. Which driver a board is on: the
+   [C64 guide](../c64/README.md), section 3, explains both.
    This core uses the JTAG pins as regular IO, so before **every** step:
    unplug, hold **S2**, plug in, hold two seconds, release. The script asks
    each time.
