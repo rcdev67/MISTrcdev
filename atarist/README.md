@@ -2,8 +2,8 @@
 
 From nothing to the desktop. This covers the setup that runs and has been
 tested since September 2026: a Tang Nano 20K whose onboard BL616 runs the
-companion, a USB hub for keyboard and mouse, and an ESP32-S3 as WiFi modem
-and Bluetooth controller receiver. It was tried on two boards, one of
+companion, a USB hub for keyboard, mouse and a Bluetooth adapter, and an
+ESP32-S3 as WiFi modem. It was tried on two boards, one of
 revision 3921 and one of 3923; where something is only partly known, it says
 so.
 
@@ -14,7 +14,7 @@ here:
 |---|---|
 | [`sources/MiSTeryNano`](../sources/MiSTeryNano) | the FPGA core, the Atari ST itself |
 | [`sources/FPGA-Companion`](../sources/FPGA-Companion) | the firmware for the BL616: USB keyboard, mouse, joysticks, SD card, the on-screen menu. The same firmware serves the C64 |
-| [`sources/Zimodem`](../sources/Zimodem) | the firmware for the ESP32: WiFi modem for the ST, file download for the companion, Bluetooth controller |
+| [`sources/Zimodem`](../sources/Zimodem) | the firmware for the ESP32: WiFi modem for the ST, file download for the companion |
 
 What this setup adds over upstream: drive sounds from real recordings, an
 external UART for a real modem (a Zimodem ESP32), a second channel on it for
@@ -67,8 +67,9 @@ recorded place and route options.
    and how to plug the board in. Not sure about the revision, or what update
    mode is? [`../companion/README.md`](../companion/README.md) explains both,
    step by step.
-5. **The modem**, if you have one: `..\esp32\flash_zimodem.cmd bt` -- the
-   Bluetooth build, so a game controller can pair. It finds the S3's port the
+5. **The modem**, if you have one: `..\esp32\flash_zimodem.cmd`, the
+   build without Bluetooth: controllers pair with the companion now, and an
+   ESP32 doing Bluetooth slows its own WiFi. It finds the S3's port the
    same way. Then wire it as in section 3.
 6. **The SD card** holds your disk images (`.ST`), hard disk images and
    the settings file `atarist.ini`, which the companion writes when you
@@ -134,7 +135,7 @@ itself, also between single and double sided disks.
 | Cartridge | None, Cubase 2&3 | emulates the Cubase copy protection dongle |
 | Mouse | USB, Atari ST, Amiga | USB for a mouse on the hub; the other two are for a real mouse on a DB9 adapter |
 | Mouse cpi | 400 to 3200 | the resolution of your USB mouse; set it so that the pointer speed feels right |
-| Joysticks | USB only, 1 Atari + USB, 2 Atari + USB | how many real DB9 joysticks you have wired. With `USB only` the first USB joystick or gamepad is the ST's joystick port 1, the one games use. A Bluetooth controller through the ESP32 always lands on port 1. |
+| Joysticks | USB only, 1 Atari + USB, 2 Atari + USB | how many real DB9 joysticks you have wired. With `USB only` the first USB joystick or gamepad is the ST's joystick port 1, the one games use. A Bluetooth controller counts as a USB one. |
 | Serial | Companion, Ext. UART, Netz | where the ST's serial port goes. `Ext. UART`: to the modem on the pins 41/51, use it with a terminal program on the ST. `Netz`: the companion talks to the modem; the download menu switches to this by itself and back. `Companion`: the maintainers' built-in modem emulation, which needs a companion with its own network. |
 | TOS Slot | Primary, Secondary | which of the two TOS places of the current chipset is used, see the table above. Use `Cold Boot` right after changing it. |
 | Cold Boot | | restarts the ST with cleared memory |
@@ -228,18 +229,34 @@ speed and colours. Accessories are loaded only at start and only from
 drive A, so a game disk in the drive means no accessories, which is what
 you want for games.
 
-## 8. Controllers
+## 8. Bluetooth keyboards and controllers
 
-USB joysticks and gamepads go on the hub. A Bluetooth Low Energy
-controller (tested: Xbox Series) pairs with the ESP32-S3 and arrives as
-joystick port 1: hold the controller's pair button until its light blinks
-fast, wait until it stays lit. From then on it reconnects by itself. The
-companion's own menu (Shift+F12) has an entry `Controller...` that shows
-which controller is connected and can start pairing a new one. The bond
-lives in the ESP32, so the controller follows that board, not the Tang.
-PlayStation and Switch controllers use classic Bluetooth, which the S3
-does not have. More in the Zimodem sources'
-[MISTERYNANO.md](../sources/Zimodem/MISTERYNANO.md).
+USB joysticks and gamepads go on the hub. Bluetooth keyboards and
+controllers work through a USB Bluetooth adapter on the hub as well: the
+companion pairs them (Shift+F12, *Scan Bluetooth*, or *Controller...* for a
+game controller) and passes them on like USB devices, for the ST exactly as
+for the C64. Tested on the ST with a Realtek RTL8761B adapter: a Logitech
+K380 (classic Bluetooth), a ROG Azoth X (Bluetooth Low Energy) and an Xbox
+Series controller. Up to four devices at once: a keyboard, a mouse and two
+controllers. The pairings are kept on the SD card, `bluetooth.txt` and
+`bluetooth_le.bin`, so they follow the card, not the board. Which adapters
+work and how to pair: [`../companion/README.md`](../companion/README.md),
+*Bluetooth keyboards and controllers*.
+
+The ST's FPGA answers the companion only some 2.4 s after power-up, the
+C64's after 10 ms, and the companion starts Bluetooth only once the card
+is in. A paired keyboard that called earlier and got no answer may wait
+for its next key press before it tries again.
+
+Without a mouse, TOS moves its pointer with **Alt + arrow keys** (with
+Shift, pixel by pixel); **Alt + Insert** is the left button, **Alt +
+Home** the right one. On the desktop and in GEM programs, not in games
+that read the mouse themselves.
+
+Until November 2026 a Bluetooth controller paired with the ESP32 instead,
+with the Bluepad32 build of Zimodem (`flash_zimodem.cmd bt`). That build
+still exists, but with the adapter on the hub it is not needed, and the
+ESP32's WiFi is faster without it.
 
 ## 9. When something does not work
 
