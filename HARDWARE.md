@@ -48,6 +48,19 @@ once; the companion takes up to four. Pairing and the reconnect times are in
 |---|---|
 | **USB stick** | formatted **FAT32**, no other file system and no images written onto it. On the hub; the C64 reads disk images from it |
 
+### A status display, optional
+
+| Part | What to look for |
+|---|---|
+| **0.96 inch OLED** | 128x64, **four pins** (GND, VCC, SCL, SDA), controller SSD1306 -- some are SH1106, which works as well. White, blue or yellow-blue makes no difference. It goes on the ESP32-S3 |
+
+It shows the machine, the WiFi with its signal, the address, the clock and
+the modem, and while a program comes from the server its progress. Wired as
+in the picture below: VCC to the S3's **3V3 pin** -- the one pin where 3.3 V
+comes *out*, so this is fine -- GND to GND, SDA to **GPIO8**, SCL to
+**GPIO7**. All four sit on the S3's left header, the one a breadboard
+leaves reachable. More in [`esp32/README.md`](esp32/README.md).
+
 ### When something does not work
 
 | Part | What to look for |
@@ -97,8 +110,15 @@ both headers.
 - **The ESP32-S3 on 5 V from the rail, never on the Tang's 3V3.** Its radio
   draws 300 to 500 mA when it joins and sends. On the Tang's 3.3 V, which
   also feeds the FPGA, WiFi failed on both boards once the Bluetooth adapter
-  and its devices were on the hub. And nothing on the S3's own `3V3` pin:
-  5 V there destroys it. Its USB sockets stay empty in use.
+  and its devices were on the hub. And no supply into the S3's own `3V3`
+  pin: 5 V there destroys it. Only the status display takes its 3.3 V *out*
+  of that pin. The S3's USB sockets stay empty in use.
+- **Measure the rail once, with everything running**: at least **4.8 V**
+  between 5V and GND, and **3.3 V** on the S3's `3V3` pin. A supply that
+  sags to 4.3 V under load still runs the Tang, but not the S3: its 3V3
+  then sat at 2.4 V, its reset pin with it, and the S3 never started. The
+  red LED on it lit all the same, and the companion said `No modem on
+  port 1` -- it looked like anything but the supply.
 - **Exactly one way into the Tang.** Its 5V pin, its USB-C socket and a dock
   that feeds power back through USB-C all reach the same rail. While the 5V
   pin is fed, the USB-C socket carries only the hub -- no PC, no powered

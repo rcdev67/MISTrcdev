@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 850" font-family="Segoe UI, Arial, Helvetica, sans-serif"><rect width="1000" height="850" fill="#ffffff"/>
-<text x="500" y="36" font-size="22" fill="#222" text-anchor="middle" font-weight="bold">Tang Nano 20K, right pin header: every wire</text>
-<text x="500" y="60" font-size="14" fill="#555" text-anchor="middle">Board seen from above, USB-C at the top, HDMI at the bottom. The pins in the order they sit on the board.</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 850" font-family="Segoe UI, Arial, Helvetica, sans-serif"><rect width="1240" height="850" fill="#ffffff"/>
+<text x="620" y="36" font-size="22" fill="#222" text-anchor="middle" font-weight="bold">Tang Nano 20K, right pin header: every wire</text>
+<text x="620" y="60" font-size="14" fill="#555" text-anchor="middle">Board seen from above, USB-C at the top, HDMI at the bottom. The pins in the order they sit on the board.</text>
 <rect x="180" y="80" width="300" height="690" rx="12" fill="#2f6b3a" stroke="none" stroke-width="2"/>
 <text x="330" y="102" font-size="15" fill="#fff" text-anchor="middle" font-weight="bold">Tang Nano 20K</text>
 <text x="330" y="120" font-size="12" fill="#d8eadb" text-anchor="middle">right pin header</text>
@@ -76,8 +76,35 @@
 <text x="746" y="355" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold">GPIO16</text>
 <rect x="710" y="369" width="72" height="22" rx="3" fill="#2b8a3e" stroke="#333" stroke-width="1"/>
 <text x="746" y="385" font-size="12" fill="#fff" text-anchor="middle" font-weight="bold">GPIO15</text>
-<text x="792" y="281" font-size="11.5" fill="#ffb3b3" text-anchor="start">not 3V3: 5 V there</text>
-<text x="792" y="305" font-size="11.5" fill="#ffb3b3" text-anchor="start">destroys the S3</text>
+<text x="790" y="281" font-size="11.5" fill="#ffb3b3" text-anchor="start">5V in, never</text>
+<text x="790" y="305" font-size="11.5" fill="#ffb3b3" text-anchor="start">into 3V3</text>
+<rect x="1050" y="220" width="160" height="200" rx="8" fill="#111" stroke="#666" stroke-width="2"/>
+<text x="1140" y="245" font-size="14" fill="#fff" text-anchor="middle" font-weight="bold">0.96 inch OLED</text>
+<text x="1140" y="262" font-size="11.5" fill="#bbb" text-anchor="middle">optional, SSD1306</text>
+<text x="1140" y="277" font-size="11.5" fill="#bbb" text-anchor="middle">or SH1106, I2C</text>
+<rect x="1090" y="325" width="100" height="70" rx="3" fill="#0b2a3a" stroke="#2d6a8a" stroke-width="1"/>
+<text x="1140" y="357" font-size="11" fill="#9fe7ff" text-anchor="middle">C64  WiFi</text>
+<text x="1140" y="374" font-size="11" fill="#9fe7ff" text-anchor="middle">192.168...</text>
+<rect x="898" y="259" width="72" height="22" rx="3" fill="#f08c00" stroke="#333" stroke-width="1"/>
+<text x="934" y="275" font-size="11.5" fill="#000" text-anchor="middle" font-weight="bold">3V3 out</text>
+<path d="M970 270 L1040 270" fill="none" stroke="#f08c00" stroke-width="3" stroke-linejoin="round"/>
+<rect x="1040" y="259" width="46" height="22" rx="3" fill="#f08c00" stroke="#333" stroke-width="1"/>
+<text x="1063" y="275" font-size="11.5" fill="#000" text-anchor="middle" font-weight="bold">VCC</text>
+<rect x="898" y="289" width="72" height="22" rx="3" fill="#222222" stroke="#333" stroke-width="1"/>
+<text x="934" y="305" font-size="11.5" fill="#fff" text-anchor="middle" font-weight="bold">GND</text>
+<path d="M970 300 L1040 300" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+<rect x="1040" y="289" width="46" height="22" rx="3" fill="#222222" stroke="#333" stroke-width="1"/>
+<text x="1063" y="305" font-size="11.5" fill="#fff" text-anchor="middle" font-weight="bold">GND</text>
+<rect x="898" y="339" width="72" height="22" rx="3" fill="#7b2cbf" stroke="#333" stroke-width="1"/>
+<text x="934" y="355" font-size="11.5" fill="#fff" text-anchor="middle" font-weight="bold">GPIO8</text>
+<path d="M970 350 L1040 350" fill="none" stroke="#7b2cbf" stroke-width="3" stroke-linejoin="round"/>
+<rect x="1040" y="339" width="46" height="22" rx="3" fill="#7b2cbf" stroke="#333" stroke-width="1"/>
+<text x="1063" y="355" font-size="11.5" fill="#fff" text-anchor="middle" font-weight="bold">SDA</text>
+<rect x="898" y="369" width="72" height="22" rx="3" fill="#7b2cbf" stroke="#333" stroke-width="1"/>
+<text x="934" y="385" font-size="11.5" fill="#fff" text-anchor="middle" font-weight="bold">GPIO7</text>
+<path d="M970 380 L1040 380" fill="none" stroke="#7b2cbf" stroke-width="3" stroke-linejoin="round"/>
+<rect x="1040" y="369" width="46" height="22" rx="3" fill="#7b2cbf" stroke="#333" stroke-width="1"/>
+<text x="1063" y="385" font-size="11.5" fill="#fff" text-anchor="middle" font-weight="bold">SCL</text>
 <path d="M552 270 L710 270" fill="none" stroke="#d62828" stroke-width="3" stroke-linejoin="round"/>
 <circle cx="552" cy="270" r="4.5" fill="#d62828"/>
 <path d="M568 300 L710 300" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
@@ -95,5 +122,5 @@
 <text x="905" y="656" font-size="12" fill="#b00" text-anchor="middle">never 5V</text>
 <path d="M710 651 L610 651 L610 422 L452 422" fill="none" stroke="#1c5fb8" stroke-width="3" stroke-linejoin="round"/>
 <path d="M820 662 L820 678 L600 678 L600 582 L452 582" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
-<text x="500" y="835" font-size="13" fill="#444" text-anchor="middle">Bluetooth goes through the adapter on the hub, never through the ESP32. Its USB sockets stay empty.</text>
+<text x="620" y="835" font-size="13" fill="#444" text-anchor="middle">Bluetooth goes through the adapter on the hub, never through the ESP32. Its USB sockets stay empty.</text>
 </svg>

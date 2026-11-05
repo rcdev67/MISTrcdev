@@ -419,8 +419,8 @@ new connection instead of giving up, see [`server/`](../server). So flash
 the modem from this repository's `bin\`; a modem with an older firmware
 still manages programs and small disks.
 
-**Starting a disk.** Put the file into the drive with F12, *Floppy:*,
-close the OSD, and load the first program on the disk to the address it
+**Starting a disk.** Put the file into the drive with F12, *Floppy:*
+(**Delete** on that entry ejects it again), close the OSD, and load the first program on the disk to the address it
 was written for:
 
     LOAD"*",8,1
@@ -512,6 +512,7 @@ file cannot be read.
 | 1541 LED solid red | the DOS image in flash is missing |
 | F12 does nothing, console silent | wrong companion image for the board revision (3921 vs 3923) |
 | board on a PC, companion not running | working as intended — the BL616 stays a debugger there. Use a power supply |
+| `No modem on port 1`, `STAT ... bytes 0` in `NETLOG.TXT`, the S3's red LED lit | the S3 does not run: measure its `3V3` pin with everything on, it must be 3.3 V. At 2.4 V here the supply gave only 4.3 V under load -- enough for the Tang, not for the S3. At least 4.8 V on the rail, see [`../HARDWARE.md`](../HARDWARE.md) |
 | `unable to open ftdi device: -4` | the board is on the FTDI driver, see step 3 |
 | `Error: Gowin Device not found` after a run that succeeded | the core restarted and took the JTAG pins. Replug holding S2 |
 | openFPGALoader exits with no message at all | `lib` is missing from PATH, exit code `0xC0000135`. `paths.cmd` handles this |

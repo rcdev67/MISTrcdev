@@ -25,6 +25,41 @@ driver insists on modem sleep, so that every keystroke to a BBS waited for
 the next wake-up. Bluetooth now always goes through the USB adapter on the
 hub, for keyboards, mice and controllers on both machines.
 
+## The status display
+
+A 0.96 inch OLED, 128x64 with four pins, SSD1306 or SH1106 on I2C, can sit
+on the S3: VCC to its 3V3 pin, GND to GND, SDA to GPIO8, SCL to GPIO7,
+all on its left header (drawn in [`../HARDWARE.md`](../HARDWARE.md)).
+GPIO4, 5, 6 and 9 next to them are Zimodem's modem lines and stay free. It shows
+
+- the machine, large: *Atari ST* or *C64*, which the companion tells the
+  modem the first time it talks to it after power-up (`AT+SYS:`) -- for
+  the clock or the first download; until then *MISTrcdev*
+- the WiFi with its signal in dBm and four bars, the address, the network
+- the date and time, once NTP has answered
+- the mode and the baud rate: *ready*, *online*, *PPP*
+- while a program comes from the server: `FETCH 45% 120 KB/s` with a bar
+  across the screen, then `SEND 30% 40 KB/s` the same way while it goes to
+  the companion, and *sent* with the bar full
+
+Without a display nothing changes: the modem looks for one every five
+seconds and nothing waits for it. All of the I2C runs in a task of its own,
+so the serial port never waits for the display. Against burn-in the picture
+moves by one column every minute.
+
+From a terminal on the machine, or from any other one on the modem:
+
+| Command | |
+|---|---|
+| `AT+DISP` | what was found: `DISPLAY SSD1306 3C`, or `DISPLAY NONE` |
+| `AT+DISP:1106` | the controller is an SH1106 -- shown when the picture sits two columns off or is noise. Stored |
+| `AT+DISP:1306` | back to SSD1306, the default. Stored |
+| `AT+DISP:OFF`, `AT+DISP:ON` | switch it off and on, stored |
+
+The driver and its 5x7 font are our own, in the Zimodem fork
+(`zimodem/zdisplay.ino`, the font drawn in `tools/font5x7/make_font.py`):
+nothing to install for building.
+
 ## Flash
 
 Take the S3 off the Tang. Of its two USB sockets the one to use is marked

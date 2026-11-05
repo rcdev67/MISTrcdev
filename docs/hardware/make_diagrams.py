@@ -17,6 +17,7 @@ RIGHT = ['5V', 'GND', '76', '80', '42', '41', '56', '54', '51', '48',
 
 RED, BLACK, ORANGE = '#d62828', '#222222', '#f08c00'
 GREEN, BLUE, AMBER = '#2b8a3e', '#1c5fb8', '#e9c46a'
+PURPLE = '#7b2cbf'
 BOARD, CHIP, GREY = '#2f6b3a', '#1d3b5a', '#e9ecef'
 FONT = 'Segoe UI, Arial, Helvetica, sans-serif'
 
@@ -160,6 +161,11 @@ def setup():
     s.line([(270, 500), (270, 662), (710, 662), (710, 462), (720, 462)], BLACK, 3)
     s.dot(270, 500, BLACK)
     s.text(500, 642, "to the S3's 5V pin, never to its 3V3", 12, '#444')
+    # the status display, optional, on the ESP32
+    s.line([(955, 470), (955, 580), (920, 580)], PURPLE, 3)
+    s.rect(760, 556, 160, 48, '#111', '#666', rx=6)
+    s.text(840, 577, '0.96 inch OLED', 13, '#fff', bold=True)
+    s.text(840, 594, 'optional, on the S3', 11, '#bbb')
 
     # --- HDMI
     s.line([(500, 530), (500, 560)], '#555', 4)
@@ -173,9 +179,9 @@ def setup():
 
 # -------------------------------------------------------------- wiring ----
 def wiring():
-    s = Svg(1000, 850)
-    s.text(500, 36, 'Tang Nano 20K, right pin header: every wire', 22, bold=True)
-    s.text(500, 60, 'Board seen from above, USB-C at the top, HDMI at the bottom. The pins in the order they sit on the board.',
+    s = Svg(1240, 850)
+    s.text(620, 36, 'Tang Nano 20K, right pin header: every wire', 22, bold=True)
+    s.text(620, 60, 'Board seen from above, USB-C at the top, HDMI at the bottom. The pins in the order they sit on the board.',
            14, '#555')
     top, pitch, px = 110, 32, 430
     s.rect(px - 250, top - 30, 300, pitch * 20 + 50, BOARD, rx=12)
@@ -229,8 +235,26 @@ def wiring():
         sy[name] = y
         s.rect(ex - 10, y - 11, 72, 22, colour, '#333', rx=3, sw=1)
         s.text(ex + 26, y + 5, name, 12, '#fff', bold=True)
-    s.text(ex + 72, ey + 131, 'not 3V3: 5 V there', 11.5, '#ffb3b3', 'start')
-    s.text(ex + 72, ey + 155, 'destroys the S3', 11.5, '#ffb3b3', 'start')
+    s.text(ex + 70, ey + 131, '5V in, never', 11.5, '#ffb3b3', 'start')
+    s.text(ex + 70, ey + 155, 'into 3V3', 11.5, '#ffb3b3', 'start')
+    # the status display: four wires on the right edge
+    dpins = [('3V3 out', ORANGE, 120, 'VCC'), ('GND', BLACK, 150, 'GND'),
+             ('GPIO8', PURPLE, 200, 'SDA'), ('GPIO7', PURPLE, 230, 'SCL')]
+    dx = 1050
+    s.rect(dx, ey + 70, 160, 200, '#111', '#666', rx=8)
+    s.text(dx + 90, ey + 95, '0.96 inch OLED', 14, '#fff', bold=True)
+    s.text(dx + 90, ey + 112, 'optional, SSD1306', 11.5, '#bbb')
+    s.text(dx + 90, ey + 127, 'or SH1106, I2C', 11.5, '#bbb')
+    s.rect(dx + 40, ey + 175, 100, 70, '#0b2a3a', '#2d6a8a', rx=3, sw=1)
+    s.text(dx + 90, ey + 207, 'C64  WiFi', 11, '#9fe7ff')
+    s.text(dx + 90, ey + 224, '192.168...', 11, '#9fe7ff')
+    for name, colour, dy, dname in dpins:
+        y = ey + dy
+        s.rect(ex + 178, y - 11, 72, 22, colour, '#333', rx=3, sw=1)
+        s.text(ex + 214, y + 5, name, 11.5, '#000' if colour == ORANGE else '#fff', bold=True)
+        s.line([(ex + 250, y), (dx - 10, y)], colour, 3)
+        s.rect(dx - 10, y - 11, 46, 22, colour, '#333', rx=3, sw=1)
+        s.text(dx + 13, y + 5, dname, 11.5, '#000' if colour == ORANGE else '#fff', bold=True)
     # power from the rail
     s.line([(rx - 8, sy['5V']), (ex - 10, sy['5V'])], RED, 3)
     s.dot(rx - 8, sy['5V'], RED)
@@ -255,7 +279,7 @@ def wiring():
     g2 = gnd_rows[1]
     s.line([(cx + 100, cy + 102), (cx + 100, cy + 118), (600, cy + 118), (600, g2), (px + 22, g2)], BLACK, 3)
 
-    s.text(500, 835, 'Bluetooth goes through the adapter on the hub, never through the ESP32. Its USB sockets stay empty.',
+    s.text(620, 835, 'Bluetooth goes through the adapter on the hub, never through the ESP32. Its USB sockets stay empty.',
            13, '#444')
     s.save('wiring.svg')
 

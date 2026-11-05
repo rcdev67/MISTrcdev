@@ -152,7 +152,8 @@ settings`. The title line shows the running TOS version on the left and,
 with a modem attached, its network address on the right.
 
 **Disk A:** picks a floppy image for drive A. The ST notices the change by
-itself, also between single and double sided disks.
+itself, also between single and double sided disks. **Delete** on the
+entry, or inside its file list, ejects the disk.
 
 **System**
 
@@ -299,6 +300,7 @@ runs the plain modem, and pin 54 stays free.
 | `no device found` when flashing the core | S2 was not held while plugging the board in |
 | A game shows garbage or does not start | Video is on Mono: set Color and `Reset`; or the wrong chipset or TOS for it |
 | `Modem has no WiFi` | the `wifi=` line is missing or wrong; the result of the join is in `NETLOG.TXT` on the card |
+| `No modem on port 1`, `STAT ... bytes 0` in `NETLOG.TXT`, the S3's red LED lit | measure the S3's `3V3` pin with everything running: it must be 3.3 V. Here it was 2.4 V, its reset pin with it, so the S3 never started -- the supply gave 4.3 V under load, enough for the Tang, not for the S3. At least 4.8 V on the rail. A wire from pin 41 to pin 51 instead of the S3 tells the rest: bytes come back there, the Tang side works |
 | `Modem has no WiFi` once the Bluetooth adapter and its devices are in, fine without them | the S3 hangs on the Tang's 3.3 V. Its radio draws 300 to 500 mA when it joins and sends, the Tang's 3.3 V also feeds the FPGA, and with the hub drawing more the join fails. Feed the S3's `5V` pin from the common 5 V rail, with the capacitor, and nothing on its `3V3` pin -- 5 V there destroys it. Seen on both boards here |
 | Downloads slow, `FETCH ... 2 connections` or more, the clock not set at power-up | a weak WiFi signal: every `FETCH` line in the console gives the S3's `rssi`. From about -70 dBm on it is reliable; at -77 to -80 even a listing needs several tries. Lay the end of the S3 with its antenna clear of the Tang, cables and metal, towards the router, or take the S3 DevKitC-1U with an external antenna. A modem that joins slowly misses the clock at power-up: `clockwait=60` in `atarist.ini` holds the ST back up to a minute for it |
 | The ESP32 restarts when WiFi comes up | its 5 V comes through a thin jumper or through the Tang; feed it from the common rail and add the capacitor |
