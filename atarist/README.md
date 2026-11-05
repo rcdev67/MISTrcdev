@@ -1,6 +1,8 @@
 # An Atari ST on the Tang Nano 20K
 
-From nothing to the desktop. This covers the setup that runs and has been
+From nothing to the desktop -- never done this before? Then start with
+[`../START.md`](../START.md), the installation and our scripts step by step.
+This covers the setup that runs and has been
 tested since September 2026: a Tang Nano 20K whose onboard BL616 runs the
 companion, a USB hub for keyboard, mouse and a Bluetooth adapter, and an
 ESP32-S3 as WiFi modem. It was tried on two boards, one of

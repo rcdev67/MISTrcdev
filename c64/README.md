@@ -2,7 +2,9 @@
 
 From nothing to `READY.` Everything needed is in this repository, except the
 ROM images, which are not ours to hand out, and the tools, which
-[`../TOOLS.md`](../TOOLS.md) names with their exact versions.
+[`../TOOLS.md`](../TOOLS.md) names with their exact versions. Never done
+this before? [`../START.md`](../START.md) goes through the installation and
+our scripts step by step first.
 
 ## What you need
 

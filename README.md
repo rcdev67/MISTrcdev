@@ -32,6 +32,10 @@ prior knowledge can work through.
 
 ## Getting started
 
+**New to all of this?** [`START.md`](START.md) goes from an empty Windows PC
+to the first start: every tool to install, how to check it worked, and our
+scripts in order. The short version for those who know their way around:
+
 Clone this repository, then fetch the sources -- both cores, the companion
 and the modem, pinned to the exact state that was tested:
 
@@ -77,6 +81,7 @@ vendors' user interfaces. Then the guide for your machine:
 | [`esp32/`](esp32) | the **WiFi modem**, an ESP32-S3 with Zimodem: `build_zimodem.cmd`, `flash_zimodem.cmd` |
 | [`server/`](server) | **stserve**, the collection on a NAS or PC for both machines' *Download...*: ZIP archives opened on the fly, menus of thirty, and a catalogue in the browser with pictures, favourites and a button that sends a game to the computer |
 | [`sources/`](sources) | the sources, as git submodules of our forks, each pinned to a tested commit |
+| [`START.md`](START.md) | **from an empty PC to the first start**, step by step, for beginners |
 | [`HARDWARE.md`](HARDWARE.md) | the **parts** and the **wiring**: what to buy, every wire on the pin header, power and antenna |
 | [`TOOLS.md`](TOOLS.md) | the tools from outside, with exact versions and where to get them |
 | [`paths.cmd`](paths.cmd) | where the tools are; read by every script |
