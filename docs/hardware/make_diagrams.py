@@ -121,11 +121,6 @@ def setup():
     s.line([(60, 500), (280, 500)], BLACK, 5)
     s.text(62, 470, '+5 V', 11, RED, 'start', True)
     s.text(62, 492, 'GND', 11, BLACK, 'start', True)
-    s.line([(170, 455), (170, 471)], '#555', 2.5)
-    s.line([(156, 471), (184, 471)], '#555', 3)
-    s.line([(156, 479), (184, 479)], '#555', 3)
-    s.line([(170, 479), (170, 500)], '#555', 2.5)
-    s.text(192, 480, '470 µF', 11.5, '#444', 'start')
     s.rect(40, 570, 200, 60, GREY, '#666', rx=8)
     s.text(140, 596, '5 V supply', 16, bold=True)
     s.text(140, 615, '2 A or more', 12.5, '#555')
@@ -158,8 +153,16 @@ def setup():
     # its supply from the same rail, along the bottom
     s.line([(290, 455), (290, 650), (700, 650), (700, 446), (720, 446)], RED, 3)
     s.dot(290, 455, RED)
-    s.line([(270, 500), (270, 662), (710, 662), (710, 462), (720, 462)], BLACK, 3)
+    s.line([(270, 500), (270, 676), (710, 676), (710, 462), (720, 462)], BLACK, 3)
     s.dot(270, 500, BLACK)
+    # the capacitor right at the S3, where its radio draws the current
+    s.dot(660, 650, RED)
+    s.line([(660, 650), (660, 659)], '#555', 2.5)
+    s.line([(648, 659), (672, 659)], '#555', 3)
+    s.line([(648, 667), (672, 667)], '#555', 3)
+    s.line([(660, 667), (660, 676)], '#555', 2.5)
+    s.dot(660, 676, BLACK)
+    s.text(642, 667, '470 µF, at the S3', 11.5, '#444', 'end')
     s.text(500, 642, "to the S3's 5V pin, never to its 3V3", 12, '#444')
     # the status display, optional, on the ESP32
     s.line([(955, 470), (955, 580), (920, 580)], PURPLE, 3)
@@ -217,8 +220,8 @@ def wiring():
     s.dot(rx - 8, ypin['5V'], RED)
     s.line([(px + 22, ypin['GND']), (rx + 8, ypin['GND'])], BLACK, 3)
     s.dot(rx + 8, ypin['GND'], BLACK)
-    s.text(rx, top + pitch * 20 + 28, '+5 V and GND from the supply,', 12, '#444')
-    s.text(rx, top + pitch * 20 + 44, '470 µF across them', 12, '#444')
+    s.text(rx, top + pitch * 20 + 28, '+5 V and GND', 12, '#444')
+    s.text(rx, top + pitch * 20 + 44, 'from the supply', 12, '#444')
 
     # the ESP32
     ex, ey = 720, 150
@@ -260,6 +263,14 @@ def wiring():
     s.dot(rx - 8, sy['5V'], RED)
     s.line([(rx + 8, sy['GND']), (ex - 10, sy['GND'])], BLACK, 3)
     s.dot(rx + 8, sy['GND'], BLACK)
+    cx0, y5, yg = 692, sy['5V'], sy['GND']
+    s.dot(cx0, y5, RED)
+    s.line([(cx0, y5), (cx0, y5 + 11)], '#555', 2.5)
+    s.line([(cx0 - 10, y5 + 11), (cx0 + 10, y5 + 11)], '#555', 3)
+    s.line([(cx0 - 10, y5 + 19), (cx0 + 10, y5 + 19)], '#555', 3)
+    s.line([(cx0, y5 + 19), (cx0, yg)], '#555', 2.5)
+    s.dot(cx0, yg, BLACK)
+    s.text(cx0 - 14, y5 + 19, '470 µF', 11, '#444', 'end')
     # the two signal wires, crossing the rail
     s.line([(ex - 10, sy['GPIO16']), (630, sy['GPIO16']), (630, ypin['41']), (px + 22, ypin['41'])], GREEN, 3)
     s.line([(ex - 10, sy['GPIO15']), (650, sy['GPIO15']), (650, ypin['51']), (px + 22, ypin['51'])], GREEN, 3)

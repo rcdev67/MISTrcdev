@@ -19,7 +19,7 @@ Atari ST, and switching between them only means flashing the other core.
 | **HDMI display and cable** | any with an HDMI input |
 | **5 V supply** | 2 A or more. **Not a PC**: on a PC the BL616 stays a debugger and the companion does not start |
 | **Breadboard, jumper wires** | a small breadboard for the 5 V rail, jumper wires from it to the pin headers |
-| **Electrolytic capacitor** | 470 µF or more, 10 V or more, across the rail |
+| **Electrolytic capacitor** | 470 µF or more, 10 V or more (16 V is better), **right at the S3's `5V` and `GND` pins** |
 
 ### For the network: the WiFi modem
 
@@ -104,9 +104,16 @@ both headers.
 
 ## Power
 
-- **One 5 V supply for everything.** It feeds the rails of the breadboard,
-  the capacitor sits across them (long leg to 5 V), and one pair of wires
-  runs to the Tang's 5V and GND, one pair to the S3's `5V` and `GND`.
+- **One 5 V supply for everything.** One pair of wires runs to the Tang's
+  5V and GND, one pair to the S3's `5V` and `GND` -- short and not too thin,
+  best each pair straight from the supply.
+- **The capacitor sits right at the S3**, one leg in the row of its `5V`
+  pin, the other in the row of its `GND` pin: long leg to 5V, the side with
+  the stripe to GND. It catches the current the radio draws for a few
+  milliseconds when it joins and sends, 300 to 500 mA. At the supply it
+  would be too far away: the dip would happen in the wire to the S3 all the
+  same. It does not make up for wires that lose voltage all the time -- that
+  is what the measurement below is for.
 - **The ESP32-S3 on 5 V from the rail, never on the Tang's 3V3.** Its radio
   draws 300 to 500 mA when it joins and sends. On the Tang's 3.3 V, which
   also feeds the FPGA, WiFi failed on both boards once the Bluetooth adapter

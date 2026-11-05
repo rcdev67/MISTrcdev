@@ -46,11 +46,6 @@
 <path d="M60 500 L280 500" fill="none" stroke="#222222" stroke-width="5" stroke-linejoin="round"/>
 <text x="62" y="470" font-size="11" fill="#d62828" text-anchor="start" font-weight="bold">+5 V</text>
 <text x="62" y="492" font-size="11" fill="#222222" text-anchor="start" font-weight="bold">GND</text>
-<path d="M170 455 L170 471" fill="none" stroke="#555" stroke-width="2.5" stroke-linejoin="round"/>
-<path d="M156 471 L184 471" fill="none" stroke="#555" stroke-width="3" stroke-linejoin="round"/>
-<path d="M156 479 L184 479" fill="none" stroke="#555" stroke-width="3" stroke-linejoin="round"/>
-<path d="M170 479 L170 500" fill="none" stroke="#555" stroke-width="2.5" stroke-linejoin="round"/>
-<text x="192" y="480" font-size="11.5" fill="#444" text-anchor="start">470 µF</text>
 <rect x="40" y="570" width="200" height="60" rx="8" fill="#e9ecef" stroke="#666" stroke-width="2"/>
 <text x="140" y="596" font-size="16" fill="#222" text-anchor="middle" font-weight="bold">5 V supply</text>
 <text x="140" y="615" font-size="12.5" fill="#555" text-anchor="middle">2 A or more</text>
@@ -83,8 +78,15 @@
 <text x="840" y="508" font-size="12" fill="#555" text-anchor="middle">see wiring.svg</text>
 <path d="M290 455 L290 650 L700 650 L700 446 L720 446" fill="none" stroke="#d62828" stroke-width="3" stroke-linejoin="round"/>
 <circle cx="290" cy="455" r="4.5" fill="#d62828"/>
-<path d="M270 500 L270 662 L710 662 L710 462 L720 462" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+<path d="M270 500 L270 676 L710 676 L710 462 L720 462" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
 <circle cx="270" cy="500" r="4.5" fill="#222222"/>
+<circle cx="660" cy="650" r="4.5" fill="#d62828"/>
+<path d="M660 650 L660 659" fill="none" stroke="#555" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M648 659 L672 659" fill="none" stroke="#555" stroke-width="3" stroke-linejoin="round"/>
+<path d="M648 667 L672 667" fill="none" stroke="#555" stroke-width="3" stroke-linejoin="round"/>
+<path d="M660 667 L660 676" fill="none" stroke="#555" stroke-width="2.5" stroke-linejoin="round"/>
+<circle cx="660" cy="676" r="4.5" fill="#222222"/>
+<text x="642" y="667" font-size="11.5" fill="#444" text-anchor="end">470 µF, at the S3</text>
 <text x="500" y="642" font-size="12" fill="#444" text-anchor="middle">to the S3's 5V pin, never to its 3V3</text>
 <path d="M955 470 L955 580 L920 580" fill="none" stroke="#7b2cbf" stroke-width="3" stroke-linejoin="round"/>
 <rect x="760" y="556" width="160" height="48" rx="6" fill="#111" stroke="#666" stroke-width="2"/>

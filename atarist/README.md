@@ -132,11 +132,10 @@ This is where most of my lost evenings went, so here are the rules first:
 - While the Tang's USB-C socket hangs on a **computer**, the companion does
   not start at all (see [`../companion/README.md`](../companion/README.md)). For normal use power it from a
   supply.
-- **One supply for everything**: feed 5 V into the power rails of a
-  breadboard, put the capacitor across the rails (long leg to 5 V), and
-  run one pair of wires to the Tang (5V is the top pin of the right
-  header, GND the one below it) and one pair to the ESP32-S3 (`5V` and
-  `GND`). Do not power the S3 *through* the Tang from the Tang's 5V pin
+- **One supply for everything**: run one pair of wires to the Tang (5V is
+  the top pin of the right header, GND the one below it) and one pair to
+  the ESP32-S3 (`5V` and `GND`), and put the capacitor right at the S3's
+  `5V` and `GND` pins (long leg to 5V). Do not power the S3 *through* the Tang from the Tang's 5V pin
   when the Tang itself is fed over USB-C: the S3 then resets whenever its
   radio starts.
 - Mind the header: 5V and GND are neighbours. `python make_pin_sheet.py` in
@@ -267,8 +266,8 @@ you want for games.
 
 USB joysticks and gamepads go on the hub. Bluetooth keyboards and
 controllers work through a USB Bluetooth adapter on the hub as well: the
-companion pairs them (Shift+F12, *Scan Bluetooth*, or *Controller...* for a
-game controller) and passes them on like USB devices, for the ST exactly as
+companion pairs them (Shift+F12, *Scan Bluetooth*, for keyboards and game
+controllers alike) and passes them on like USB devices, for the ST exactly as
 for the C64. Tested on the ST with a Realtek RTL8761B adapter: a Logitech
 K380 (classic Bluetooth), a ROG Azoth X (Bluetooth Low Energy) and an Xbox
 Series controller. Up to four devices at once: a keyboard, a mouse and two
@@ -303,9 +302,9 @@ runs the plain modem, and pin 54 stays free.
 | A game shows garbage or does not start | Video is on Mono: set Color and `Reset`; or the wrong chipset or TOS for it |
 | `Modem has no WiFi` | the `wifi=` line is missing or wrong; the result of the join is in `NETLOG.TXT` on the card |
 | `No modem on port 1`, `STAT ... bytes 0` in `NETLOG.TXT`, the S3's red LED lit | measure the S3's `3V3` pin with everything running: it must be 3.3 V. Here it was 2.4 V, its reset pin with it, so the S3 never started -- the supply gave 4.3 V under load, enough for the Tang, not for the S3. At least 4.8 V on the rail. A wire from pin 41 to pin 51 instead of the S3 tells the rest: bytes come back there, the Tang side works |
-| `Modem has no WiFi` once the Bluetooth adapter and its devices are in, fine without them | the S3 hangs on the Tang's 3.3 V. Its radio draws 300 to 500 mA when it joins and sends, the Tang's 3.3 V also feeds the FPGA, and with the hub drawing more the join fails. Feed the S3's `5V` pin from the common 5 V rail, with the capacitor, and nothing on its `3V3` pin -- 5 V there destroys it. Seen on both boards here |
+| `Modem has no WiFi` once the Bluetooth adapter and its devices are in, fine without them | the S3 hangs on the Tang's 3.3 V. Its radio draws 300 to 500 mA when it joins and sends, the Tang's 3.3 V also feeds the FPGA, and with the hub drawing more the join fails. Feed the S3's `5V` pin from the common 5 V rail, with the capacitor at its pins, and nothing on its `3V3` pin -- 5 V there destroys it. Seen on both boards here |
 | Downloads slow, `FETCH ... 2 connections` or more, the clock not set at power-up | a weak WiFi signal: every `FETCH` line in the console gives the S3's `rssi`. From about -70 dBm on it is reliable; at -77 to -80 even a listing needs several tries. Lay the end of the S3 with its antenna clear of the Tang, cables and metal, towards the router, or take the S3 DevKitC-1U with an external antenna. A modem that joins slowly misses the clock at power-up: `clockwait=60` in `atarist.ini` holds the ST back up to a minute for it |
-| The ESP32 restarts when WiFi comes up | its 5 V comes through a thin jumper or through the Tang; feed it from the common rail and add the capacitor |
+| The ESP32 restarts when WiFi comes up | its 5 V comes through a thin jumper or through the Tang; feed it from the common rail and put the capacitor right at its `5V` and `GND` pins |
 | The PC no longer sees a board or adapter on some USB sockets | a short between 5V and GND tripped the PC's port protection; [`usbports.ps1`](../sources/FPGA-Companion/tools/usbports.ps1) in the companion sources shows `DeviceCausedOvercurrent` for such a socket |
 
 Still open on my side: Arkanoid does not react to my mouse while Lemmings

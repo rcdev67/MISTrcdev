@@ -279,8 +279,8 @@ The onboard BL616 stays the companion with the USB hub.
 
 **Leave pin 56 unconnected** -- pulling it low switches the companion to an
 external dock and the keyboard disappears. **Power the S3 from the same 5 V
-supply as the Tang**: both on the rails of a breadboard, a 470 µF capacitor
-across them, the S3's `5V` and `GND` pins on the rail, its USB sockets empty.
+supply as the Tang**: the S3's `5V` and `GND` pins on the same supply, a
+470 µF capacitor right at those two pins, its USB sockets empty.
 Not from the Tang's 3V3: WiFi failed there on both boards once the Bluetooth
 adapter was on the hub. Not from a second supply either: a separately powered
 modem feeds the switched-off Tang through pin 41, and the SD card then fails
