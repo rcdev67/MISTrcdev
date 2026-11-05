@@ -285,6 +285,13 @@ the BL616 stays a programmer and the companion does not start at all.
 5V and GND at the Tang, and **3.3 V** on the S3's `3V3` pin. Less, and the
 modem does not start, although its red LED is lit.
 
+**A status display is optional.** If you have a 0.96 inch OLED with four
+pins, it goes on the S3 with four more wires -- VCC to `3V3`, GND, SDA to
+GPIO8, SCL to GPIO7 -- and shows the machine, the WiFi signal, the address,
+the clock and a download's progress. Without one nothing changes and
+nothing has to be set: the modem looks for it by itself. Details in
+[`HARDWARE.md`](HARDWARE.md) and [`esp32/README.md`](esp32/README.md).
+
 ## 8. The first start
 
 The SD card must be in **before** switching on.
