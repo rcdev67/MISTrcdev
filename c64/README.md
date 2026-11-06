@@ -393,6 +393,9 @@ with pictures, a search and the first letters:
   `play=on` in `c64.ini`, which makes the companion ask the server every
   10 seconds. Not with a terminal program online over the modem: each
   question takes the modem from the 6551 for a second or two.
+- **Saves**: with `save=on` in `c64.ini` a disk a game has saved to goes
+  back to the server half a minute after the floppy went quiet; the last
+  ten versions of every disk are kept and can go back onto the card.
 - **Send to the SD card** puts a game at the top of every list on the
   C64, marked `> ` -- *Reload list* and it is the first entry.
   **Send to the USB stick** does the same, marked `USB> `, and the game

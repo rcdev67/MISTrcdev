@@ -1068,7 +1068,8 @@ play = Play()
 
 CORE_NAMES = {"misterynano": "Atari ST", "c64nano": "C64", "nanomig": "Amiga"}
 DEVICE_KEYS = {"c": "core", "v": "companion", "b": "board", "m": "modem", "i": "ip",
-               "r": "rssi", "u": "uptime", "p": "play", "d": "drive", "l": "last"}
+               "r": "rssi", "u": "uptime", "p": "play", "d": "drive", "l": "last",
+               "s": "save", "w": "saved"}
 
 
 class Devices:
@@ -1269,6 +1270,99 @@ class Uploads:
 
 
 uploads = Uploads()
+
+
+# ------------------------------------------------------------- the saves ----
+#
+# A game that saves writes into its disk image. With save=on in its ini the
+# companion sends the whole image here once the drive has been quiet for
+# half a minute, or when the image is taken out: POST /_/save?i=<ip>&c=<core>
+# &name=<name>, through the modem's AT+PUT. Kept in ST_CACHE/saves/<machine>/
+# <name>/<yyyymmdd-hhmmss>, the last KEEP of every image, one that is the
+# same as the newest only once. The page offers each version for download
+# and to go back onto a card.
+
+SAVE_MAX = 4 * 1024 * 1024      # Zimodem's XPUT_MAX
+_STAMP = re.compile(r"^\d{8}-\d{6}(-\d+)?$")
+_SLUG = re.compile(r"^[a-z0-9-]{1,24}$")
+
+
+def slug(s):
+    return re.sub(r"[^a-z0-9]+", "-", (s or "").lower()).strip("-")[:24] or "unknown"
+
+
+class Saves:
+    KEEP = 10
+
+    def __init__(self):
+        self.lock = threading.Lock()
+
+    def put(self, machine, name, data):
+        """Keep data as the newest version of name; what happened, in words."""
+        d = cache_dir("saves", slug(machine), name)
+        if not d:
+            return None
+        with self.lock:
+            old = sorted(v for v in os.listdir(d) if _STAMP.match(v))
+            if old:
+                try:
+                    with open(os.path.join(d, old[-1]), "rb") as f:
+                        if hashlib.sha1(f.read()).digest() == hashlib.sha1(data).digest():
+                            return "unchanged"
+                except OSError:
+                    pass
+            stamp = time.strftime("%Y%m%d-%H%M%S")
+            n = 2
+            while os.path.exists(os.path.join(d, stamp)):
+                stamp = time.strftime("%Y%m%d-%H%M%S") + "-%d" % n
+                n += 1
+            tmp = os.path.join(d, ".incoming")
+            with open(tmp, "wb") as f:
+                f.write(data)
+            os.replace(tmp, os.path.join(d, stamp))
+            for v in (old + [stamp])[:-self.KEEP]:
+                try:
+                    os.remove(os.path.join(d, v))
+                except OSError:
+                    pass
+            return "kept as " + stamp
+
+    def path(self, m, name, v):
+        base = cache_dir("saves")
+        if not base or not _SLUG.match(m) or not CARD_NAME.match(name) or not _STAMP.match(v):
+            return None
+        f = os.path.join(base, m, name, v)
+        return f if os.path.isfile(f) else None
+
+    def to_json(self):
+        base = cache_dir("saves")
+        out = []
+        if not base:
+            return out
+        with self.lock:
+            for m in sorted(os.listdir(base)):
+                if not _SLUG.match(m) or not os.path.isdir(os.path.join(base, m)):
+                    continue
+                for name in sorted(os.listdir(os.path.join(base, m)), key=str.lower):
+                    d = os.path.join(base, m, name)
+                    if not CARD_NAME.match(name) or not os.path.isdir(d):
+                        continue
+                    vs = []
+                    for v in sorted((v for v in os.listdir(d) if _STAMP.match(v)), reverse=True):
+                        try:
+                            size = os.path.getsize(os.path.join(d, v))
+                        except OSError:
+                            continue
+                        when = time.mktime(time.strptime(v[:15], "%Y%m%d-%H%M%S"))
+                        vs.append({"v": v, "size": size, "when": int(when),
+                                   "date": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(when))})
+                    if vs:
+                        out.append({"m": m, "name": name, "versions": vs})
+        out.sort(key=lambda g: -g["versions"][0]["when"])
+        return out
+
+
+saves = Saves()
 
 
 def sent_lines():
@@ -1486,6 +1580,23 @@ main { padding:16px; }
 #card td.a button { padding:3px 8px; margin:0 0 0 4px; font-size:12px; }
 #card textarea { width:100%; min-height:260px; box-sizing:border-box; font:13px/1.4 monospace;
         background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:8px; }
+#saves { position:fixed; inset:0; z-index:3; background:rgba(0,0,0,.6); display:none;
+        align-items:flex-start; justify-content:center; overflow:auto; padding:24px 16px; }
+#saves .box { background:var(--panel); border-radius:10px; max-width:900px; width:100%; padding:16px; }
+#saves h2 { margin:0 0 4px; font-size:20px; }
+#saves .facts { color:var(--dim); margin-bottom:10px; font-size:13px; }
+#saves button, #saves label.btn { padding:7px 14px; font:inherit; cursor:pointer; border-radius:6px; border:0;
+        background:var(--line); color:var(--text); margin:0 8px 8px 0; display:inline-block; font-size:14px; }
+#saves .res { font-size:13px; color:var(--dim); margin-bottom:8px; }
+#saves table { width:100%; border-collapse:collapse; font-size:14px; }
+#saves td { padding:4px 6px; border-bottom:1px solid var(--line); }
+#saves td.n { text-align:right; color:var(--dim); white-space:nowrap; }
+#saves td.a { white-space:nowrap; text-align:right; }
+#saves td.a button { padding:3px 8px; margin:0 0 0 4px; font-size:12px; }
+#saves textarea { width:100%; min-height:260px; box-sizing:border-box; font:13px/1.4 monospace;
+        background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:8px; }
+#saves a.dl { color:var(--accent); text-decoration:none; margin-left:6px; font-size:13px; }
+#saves small { color:var(--dim); }
 #devices a { color:var(--accent); text-decoration:none; }
 #zoom { position:fixed; inset:0; z-index:4; background:rgba(0,0,0,.9); display:none;
         align-items:center; justify-content:center; cursor:zoom-out; }
@@ -1520,6 +1631,11 @@ main { padding:16px; }
   <div id="dx"></div>
 </div></div>
 <div id="zoom"><img alt=""></div>
+<div id="saves"><div class="box">
+  <h2>Saved games</h2><div class="facts" id="ss"></div>
+  <button id="sclose">Close</button>
+  <table id="sfiles"></table>
+</div></div>
 <div id="card"><div class="box">
   <h2 id="ct"></h2><div class="facts" id="cs"></div>
   <button id="crefresh">Read the list again</button><label class="btn">Upload files ...<input id="cup" type="file" multiple hidden></label><button id="cclose">Close</button>
@@ -1590,11 +1706,48 @@ function showDevices(list) {
       "companion " + esc(d.companion || "?") + (d.board ? " (" + esc(d.board) + ")" : ""),
       d.modem ? "Zimodem " + esc(d.modem) : "",
       d.uptime ? "up " + esc(d.uptime) + " min" : "",
-      '<a href="#" data-ip="' + esc(d.ip) + '">SD card</a>'];
+      d.save === "1" ? "saves games" + (d.saved ? ", last: " + esc(d.saved) : "") :
+      d.save === "x" ? "saves games: the modem needs a newer Zimodem" : "",
+      '<a href="#" data-ip="' + esc(d.ip) + '">SD card</a>',
+      '<a href="#" data-saves="1">Saves</a>'];
     return "<div>" + bits.filter(x => x).join(" · ") + "</div>";
   }).join("");
   $("devices").querySelectorAll("a[data-ip]").forEach(a => a.onclick = e => { e.preventDefault(); openCard(a.dataset.ip); });
+  $("devices").querySelectorAll("a[data-saves]").forEach(a => a.onclick = e => { e.preventDefault(); openSaves(); });
 }
+
+// ---- the saved games: every version of every image a computer has sent
+function openSaves() {
+  $("saves").style.display = "flex";
+  fetch("/_/api/saves").then(r => r.json()).then(renderSaves);
+}
+function renderSaves(s) {
+  const devs = s.devices || [];
+  $("ss").textContent = !s.cache ? "No ST_CACHE: stserve has nowhere to keep saves." :
+    s.saves.length ? s.saves.length + " image" + (s.saves.length === 1 ? "" : "s") + ", the last " + s.keep +
+                     " versions of each kept, newest first" :
+    "Nothing saved yet: save=on in the computer's ini, then a game that saves to its disk.";
+  $("sfiles").innerHTML = s.saves.map(g => g.versions.map((v, i) =>
+    "<tr><td>" + (i ? "" : "<b>" + esc(g.name) + "</b> <small>" + esc(g.m) + "</small>") + "</td>" +
+    '<td class="n">' + esc(v.date) + '</td><td class="n">' + kb(v.size) + '</td><td class="a">' +
+    devs.map(d => '<button data-ip="' + esc(d.ip) + '" data-m="' + esc(g.m) + '" data-n="' + esc(g.name) +
+                  '" data-v="' + esc(v.v) + '">To the card at ' + esc(d.ip) + "</button>").join("") +
+    '<a class="dl" href="/_sv/' + [g.m, g.name, v.v].map(encodeURIComponent).join("/") + '?dl=1">Download</a>' +
+    "</td></tr>").join("")).join("");
+  $("sfiles").querySelectorAll("button").forEach(b => b.onclick = () => {
+    if (!confirm("Put the version of " + b.dataset.n + " from " + b.closest("tr").children[1].textContent +
+                 " onto the card at " + b.dataset.ip + "? The copy there is replaced, unless a drive has it open."))
+      return;
+    fetch("/_/saves/restore?ip=" + encodeURIComponent(b.dataset.ip) + "&m=" + encodeURIComponent(b.dataset.m) +
+          "&name=" + encodeURIComponent(b.dataset.n) + "&v=" + encodeURIComponent(b.dataset.v), { method: "POST" })
+      .then(r => r.ok ? alert("Waiting for the computer: it fetches it when it asks next (play=on). " +
+                              "Its SD card page tells how it went.")
+                      : alert("Not possible: " + r.statusText));
+  });
+}
+function closeSaves() { $("saves").style.display = "none"; }
+$("sclose").onclick = closeSaves;
+$("saves").onclick = e => { if (e.target === $("saves")) closeSaves(); };
 
 // ---- the SD card of a computer: list, read, edit, upload, rename, delete
 let cardIp = null, cardTimer = null, cardFile = null, cardShown = -1, cardAsked = 0;
@@ -1826,6 +1979,7 @@ $("detail").onclick = e => { if (e.target === $("detail")) hide(); };
 document.onkeydown = e => {
   if (e.key !== "Escape") return;
   if ($("card").style.display === "flex") return closeCard();
+  if ($("saves").style.display === "flex") return closeSaves();
   if ($("zoom").style.display === "flex") $("zoom").style.display = "none";
   else if ($("detail").style.display === "flex") hide();
 };
@@ -2051,8 +2205,37 @@ class Handler(BaseHTTPRequestHandler):
             return self.fail(404, "Not Found")
         return self.send_data(json.dumps(card_state(ip)).encode(), "application/json")
 
+    def save_post(self, url):
+        """A disk image the companion's machine has written, see Saves."""
+        qs = urllib.parse.parse_qs(url.query)
+        arg = lambda k: qs.get(k, [""])[0]
+        name = arg("name")
+        if not CARD_NAME.match(name):
+            return self.fail(400, "Bad Name")
+        data = self.companion_body(SAVE_MAX)
+        if data is None:
+            return
+        core = arg("c")
+        what = saves.put(CORE_NAMES.get(core.lower(), core), name, data)
+        if what is None:
+            return self.fail(503, "no ST_CACHE to keep it in")
+        sys.stdout.write("save: %s from %s, %d bytes, %s\n" % (name, arg("i") or self.client_address[0], len(data), what))
+        sys.stdout.flush()
+        return self.send_data(("OK %s\n" % what).encode(), "text/plain")
+
     def do_POST(self):
         url = urllib.parse.urlsplit(self.path)
+        if url.path == "/_/save":
+            return self.save_post(url)
+        if url.path == "/_/saves/restore":
+            qs = urllib.parse.parse_qs(url.query)
+            arg = lambda k: qs.get(k, [""])[0]
+            ip, m, name, v = arg("ip"), arg("m"), arg("name"), arg("v")
+            if not ip or not saves.path(m, name, v):
+                return self.fail(404, "Not Found")
+            q = urllib.parse.quote
+            cards.queue(ip, "FILE _sv/%s/%s/%s %s" % (q(m), q(name), q(v), q(name)), "save of " + name + " back")
+            return self.send_data(json.dumps(card_state(ip)).encode(), "application/json")
         if url.path.startswith("/_/card/"):
             return self.card_post(url)
         gid = urllib.parse.parse_qs(url.query).get("id", [""])[0]
@@ -2077,6 +2260,28 @@ class Handler(BaseHTTPRequestHandler):
         else:
             return self.fail(404, "Not Found")
         self.send_data(json.dumps(state()).encode(), "application/json")
+
+    def send_ranged(self, data, body, download=None):
+        """A file, all of it or the Range asked for; download names it for
+        the browser to save."""
+        start, end = 0, len(data) - 1
+        m = re.match(r"bytes=(\d+)-(\d*)$", self.headers.get("Range", ""))
+        if m and len(data):
+            start = min(int(m.group(1)), len(data) - 1)
+            end = min(int(m.group(2)), len(data) - 1) if m.group(2) else end
+            self.send_response(206, "Partial Content")
+            self.send_header("Content-Range", "bytes %d-%d/%d" % (start, end, len(data)))
+        else:
+            self.send_response(200, "OK")
+        self.send_header("Content-Type", "application/octet-stream")
+        if download:
+            self.send_header("Content-Disposition", 'attachment; filename="%s"' % download.replace('"', "_"))
+        self.send_header("Content-Length", str(end - start + 1 if len(data) else 0))
+        self.send_header("Connection", "close")
+        self.end_headers()
+        if body:
+            self.wfile.write(data[start:end + 1])
+        self.close_connection = True
 
     def send_data(self, data, ctype, body=True, cache=False):
         self.send_response(200, "OK")
@@ -2144,6 +2349,11 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_data(json.dumps(out).encode(), "application/json", body)
         if parts[1:] == ["api", "state"]:
             return self.send_data(json.dumps(state()).encode(), "application/json", body)
+        if parts[1:] == ["api", "saves"]:
+            return self.send_data(json.dumps({"saves": saves.to_json(), "keep": Saves.KEEP,
+                                              "cache": bool(cache_dir("saves")),
+                                              "devices": devices.to_json()}).encode(),
+                                  "application/json", body)
         if parts[1:2] == ["api"] and parts[2:3] == ["games"]:
             def num(k, d):
                 try:
@@ -2171,27 +2381,20 @@ class Handler(BaseHTTPRequestHandler):
         if any(p in (".", "..") for p in parts):
             return self.fail(403, "Forbidden")
 
+        if parts[:1] == ["_sv"] and len(parts) == 4:
+            f = saves.path(parts[1], parts[2], parts[3])
+            if not f:
+                return self.fail(404, "Not Found")
+            with open(f, "rb") as fh:
+                data = fh.read()
+            name = parts[2] if "dl" in urllib.parse.parse_qs(url.query) else None
+            return self.send_ranged(data, body, name)
+
         if parts[:1] == ["_up"] and len(parts) == 3:
             data = uploads.get(parts[1])
             if data is None:
                 return self.fail(404, "Not Found")
-            start, end = 0, len(data) - 1
-            m = re.match(r"bytes=(\d+)-(\d*)$", self.headers.get("Range", ""))
-            if m and len(data):
-                start = min(int(m.group(1)), len(data) - 1)
-                end = min(int(m.group(2)), len(data) - 1) if m.group(2) else end
-                self.send_response(206, "Partial Content")
-                self.send_header("Content-Range", "bytes %d-%d/%d" % (start, end, len(data)))
-            else:
-                self.send_response(200, "OK")
-            self.send_header("Content-Type", "application/octet-stream")
-            self.send_header("Content-Length", str(end - start + 1 if len(data) else 0))
-            self.send_header("Connection", "close")
-            self.end_headers()
-            if body:
-                self.wfile.write(data[start:end + 1])
-            self.close_connection = True
-            return
+            return self.send_ranged(data, body)
 
         if parts[:1] == ["_"]:
             if path.endswith("/_"):

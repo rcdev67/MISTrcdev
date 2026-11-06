@@ -245,6 +245,13 @@ the server every 10 seconds:
 Not while a terminal program on the ST is online over the modem: each
 question takes the modem from the serial port for a second or two.
 
+**Save games.** With one more line a disk a game has saved to goes back
+to the server half a minute after the floppy went quiet, about a minute
+for a 720 KB disk; stserve keeps the last ten versions of every disk, on
+its page *Saves*:
+
+    save=on
+
 The details, other modem boards and how it works are in
 [DOWNLOAD.md](../sources/FPGA-Companion/DOWNLOAD.md).
 

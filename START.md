@@ -324,7 +324,9 @@ game to the SD card or to the USB stick, and the *Download* window's
 second line, *Save to*, picks between the two as well. Its **Play** button
 starts a game on the machine with one click, once the ini has the line
 `play=on`; with the same line its page *SD card* lists, edits, uploads,
-renames and deletes the files on the card, no card reader needed.
+renames and deletes the files on the card, no card reader needed. With
+`save=on` a disk a game has saved to goes back to the server on its own,
+the last ten versions kept, on the page *Saves*.
 
 ## 10. Both machines on one board
 

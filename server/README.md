@@ -129,6 +129,16 @@ screenshot, title screen, box and logo where there are any.
   image one of its drives has open is neither deleted, renamed nor
   replaced. Anyone who reaches the server reaches the card this way:
   stserve is for the home network, not for the internet.
+- **Saves**, in a computer's line: every disk image a game has written,
+  sent back by the companion with `save=on` in its ini, half a minute
+  after the drive went quiet or when the image comes out of the drive.
+  The last ten versions of each are kept in `ST_CACHE/saves/<machine>/
+  <name>/`, one that is the same as the newest only once. Each version
+  can be downloaded, or put back onto the card of a computer in the list
+  (**To the card at ...**: a job like an upload, so it needs `play=on`
+  too; an image a drive has open is not replaced). Without `ST_CACHE`
+  nothing is kept, and the companion's NETLOG says so. The way up is
+  Zimodem's `AT+PUT`, from `fa26b16` on.
 - **Send to the SD card**, in a game's view: the game is offered at the
   top of every list the companion fetches, marked `> `. On the computer:
   Shift+F12, *Download...*, *Reload list*, and it is the first entry. Once

@@ -60,6 +60,12 @@ From a terminal on the machine, or from any other one on the modem:
 | `AT+DISP:OFF`, `AT+DISP:ON` | switch it off and on, stored |
 | `AT+MSG:<title>\|<text>` | a message over the whole screen, for when the machine's own screen is dark -- the companion sends it while it changes the core. `_` for a space, a `\|` starts a new line, `30:` in front shows it 30 seconds instead of five minutes, `AT+MSG:` alone clears it |
 
+For the companion the modem also takes files up to a server:
+`AT+PUT:<length>:<url>` receives them over XMODEM and POSTs them, see
+[MISTERYNANO.md](../sources/Zimodem/MISTERYNANO.md). The companion needs
+it for `save=on`, written disk images back to stserve -- this image has it
+from `fa26b16` on; an older one answers `ERROR`, and saving stays off.
+
 The driver and its 5x7 font are our own, in the Zimodem fork
 (`zimodem/zdisplay.ino`, the font drawn in `tools/font5x7/make_font.py`):
 nothing to install for building.
