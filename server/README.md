@@ -36,7 +36,8 @@ runs one for each, see "For the C64" below.
 It belongs to the companion pinned in this repository: the one that walks
 into folders, shows *Reload list* and the `> ` of a game sent from the
 catalogue -- and `USB> ` and *Save to* from companion `ec8acf4` on, and
-*Play* from `e249792` on, the device status from `80d0707` on. An older companion shows a game sent to the
+*Play* from `e249792` on, the device status from `80d0707` on, the SD card
+from the browser from `81c795d` on. An older companion shows a game sent to the
 stick unmarked and puts it on the card, and does not ask for a game to
 play.
 
@@ -117,6 +118,17 @@ screenshot, title screen, box and logo where there are any.
   every question for a game, and with `play=` off once after it starts and
   after every download, at `/_/hello`. Kept in memory: after a restart of
   stserve a computer shows up again the next time it reports.
+- **The SD card** of a computer, *SD card* in its line: the files in the
+  card's root with size and date; **Open** shows a file -- an ini to edit
+  and **Save to the card**, the last 16 KB of `NETLOG.TXT` to read --
+  **Rename**, **Delete**, and **Upload files ...** puts files from the PC
+  onto the card, up to 6 MB each (the modem holds a whole file in its
+  memory). It works through the same questions as *Play*, so the computer
+  needs `play=on`; a job waits until it asks, the page says which ones
+  wait, and every round ends with a fresh list and how each job went. An
+  image one of its drives has open is neither deleted, renamed nor
+  replaced. Anyone who reaches the server reaches the card this way:
+  stserve is for the home network, not for the internet.
 - **Send to the SD card**, in a game's view: the game is offered at the
   top of every list the companion fetches, marked `> `. On the computer:
   Shift+F12, *Download...*, *Reload list*, and it is the first entry. Once

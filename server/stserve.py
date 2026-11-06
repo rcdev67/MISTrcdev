@@ -1101,6 +1101,141 @@ class Devices:
 devices = Devices()
 
 
+# --------------------------------------------------------- the SD cards ----
+#
+# The card in a computer, from the browser: its root listed, files deleted,
+# renamed, read -- an ini to edit, NETLOG.TXT -- and new ones uploaded. The
+# companion cannot be reached; it asks at /_/job with play= in its ini, and
+# the answer carries the jobs for its card, one a line (see net.c,
+# card_job_parse()). It sends the list and the files it reads back by POST
+# to /_/card/list and /_/card/text. A file uploaded here waits at
+# /_up/<token>/<name> until the companion has fetched it.
+
+CARD_NAME = re.compile(r'^[^./\\:*?"<>|][^/\\:*?"<>|]{0,46}$')
+UPLOAD_MAX = 6 * 1024 * 1024     # the modem holds a whole file in its PSRAM
+
+
+class Cards:
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.by_ip = {}
+
+    def _card(self, ip):
+        return self.by_ip.setdefault(ip, {"files": [], "listed": 0.0, "results": [],
+                                          "jobs": [], "sent": [], "texts": {}})
+
+    def queue(self, ip, line, label):
+        with self.lock:
+            c = self._card(ip)
+            # the list last: the companion sends one after its jobs anyway
+            jobs = [j for j in c["jobs"] if j[1] != "list" and j[1] != label]
+            c["jobs"] = jobs + ([(line, label)] if label != "list" else []) + [("LIST", "list")]
+
+    def take(self, ip):
+        """The jobs for this card as /_/job answers them, once."""
+        with self.lock:
+            c = self.by_ip.get(ip)
+            if not c or not c["jobs"]:
+                return ""
+            jobs, c["jobs"] = c["jobs"][:8], c["jobs"][8:]
+            c["sent"] += [l for _, l in jobs]
+            return "".join(line + "\n" for line, _ in jobs)
+
+    def listing(self, ip, data):
+        files, results = [], []
+        for line in data.decode("utf-8", "replace").splitlines():
+            if line.startswith("! "):
+                results.append(line[2:])
+                continue
+            f = line.split("\t")
+            if len(f) == 4:
+                files.append({"name": f[0], "size": int(f[1]) if f[1].isdigit() else 0,
+                              "dir": f[2] == "D", "date": f[3]})
+        files.sort(key=lambda f: (not f["dir"], f["name"].lower()))
+        with self.lock:
+            c = self._card(ip)
+            c["files"], c["listed"], c["sent"] = files, time.time(), []
+            c["results"] = (results + c["results"])[:20]
+
+    def text(self, ip, name, data, size, frm):
+        with self.lock:
+            self._card(ip)["texts"][name] = {"text": data.decode("utf-8", "replace"), "size": size,
+                                             "from": frm, "when": time.time()}
+
+    def to_json(self, ip):
+        with self.lock:
+            c = self._card(ip)
+            return {"files": c["files"], "results": c["results"],
+                    "listed": int(time.time() - c["listed"]) if c["listed"] else None,
+                    "pending": [l for _, l in c["jobs"]] + c["sent"],
+                    "texts": {k: dict(v, when=int(time.time() - v["when"])) for k, v in c["texts"].items()}}
+
+
+cards = Cards()
+
+
+def card_state(ip):
+    """A card for the browser, with what the device says of itself."""
+    dev = {d["ip"]: d for d in devices.to_json()}.get(ip, {})
+    return dict(cards.to_json(ip), machine=dev.get("machine", ""), asks=int(dev.get("play") or 0))
+
+
+class Uploads:
+    """Files from the browser for a card, until the companion has them."""
+    AGE = 2 * 3600
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.files = {}           # token -> {"name", "data" or "path", "size", "when"}
+
+    def put(self, name, src, length):
+        token = hashlib.sha1(os.urandom(16)).hexdigest()[:16]
+        d = cache_dir("uploads")
+        entry = {"name": name, "size": length, "when": time.time()}
+        if d:
+            path = os.path.join(d, token)
+            with open(path, "wb") as f:
+                left = length
+                while left:
+                    chunk = src.read(min(left, BLOCK))
+                    if not chunk:
+                        break
+                    f.write(chunk)
+                    left -= len(chunk)
+            entry["path"] = path
+        else:
+            entry["data"] = src.read(length)
+        with self.lock:
+            for k in [k for k, v in self.files.items() if time.time() - v["when"] > self.AGE]:
+                self.drop(k)
+            self.files[token] = entry
+        return token
+
+    def drop(self, token):
+        v = self.files.pop(token, None)
+        if v and v.get("path"):
+            try:
+                os.remove(v["path"])
+            except OSError:
+                pass
+
+    def get(self, token):
+        with self.lock:
+            v = self.files.get(token)
+        if not v:
+            return None
+        if "data" in v:
+            return v["data"]
+        try:
+            with open(v["path"], "rb") as f:
+                return f.read()
+        except OSError:
+            return None
+
+
+uploads = Uploads()
+
+
 def sent_lines():
     """The sent games as the first lines of a listing, marked "> ", or
     "USB> " for the stick."""
@@ -1301,6 +1436,22 @@ main { padding:16px; }
                 background:var(--line); cursor:pointer; font-size:13px; }
 #detail .chip:hover { outline:1px solid var(--accent); }
 #detail .links a { color:var(--accent); margin-right:14px; text-decoration:none; }
+#card { position:fixed; inset:0; z-index:3; background:rgba(0,0,0,.6); display:none;
+        align-items:flex-start; justify-content:center; overflow:auto; padding:24px 16px; }
+#card .box { background:var(--panel); border-radius:10px; max-width:900px; width:100%; padding:16px; }
+#card h2 { margin:0 0 4px; font-size:20px; }
+#card .facts { color:var(--dim); margin-bottom:10px; font-size:13px; }
+#card button, #card label.btn { padding:7px 14px; font:inherit; cursor:pointer; border-radius:6px; border:0;
+        background:var(--line); color:var(--text); margin:0 8px 8px 0; display:inline-block; font-size:14px; }
+#card .res { font-size:13px; color:var(--dim); margin-bottom:8px; }
+#card table { width:100%; border-collapse:collapse; font-size:14px; }
+#card td { padding:4px 6px; border-bottom:1px solid var(--line); }
+#card td.n { text-align:right; color:var(--dim); white-space:nowrap; }
+#card td.a { white-space:nowrap; text-align:right; }
+#card td.a button { padding:3px 8px; margin:0 0 0 4px; font-size:12px; }
+#card textarea { width:100%; min-height:260px; box-sizing:border-box; font:13px/1.4 monospace;
+        background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:8px; }
+#devices a { color:var(--accent); text-decoration:none; }
 #zoom { position:fixed; inset:0; z-index:4; background:rgba(0,0,0,.9); display:none;
         align-items:center; justify-content:center; cursor:zoom-out; }
 #zoom img { max-width:96vw; max-height:96vh; image-rendering:pixelated; }
@@ -1334,6 +1485,13 @@ main { padding:16px; }
   <div id="dx"></div>
 </div></div>
 <div id="zoom"><img alt=""></div>
+<div id="card"><div class="box">
+  <h2 id="ct"></h2><div class="facts" id="cs"></div>
+  <button id="crefresh">Read the list again</button><label class="btn">Upload files ...<input id="cup" type="file" multiple hidden></label><button id="cclose">Close</button>
+  <div class="res" id="cr"></div>
+  <div id="cedit"></div>
+  <table id="cfiles"></table>
+</div></div>
 <script>
 const $ = id => document.getElementById(id);
 let q = "", letter = "", start = 0, total = 0, timer = null, current = null;
@@ -1396,10 +1554,84 @@ function showDevices(list) {
       parseInt(d.play) ? "asks for games every " + esc(d.play) + " s" : "Play off",
       "companion " + esc(d.companion || "?") + (d.board ? " (" + esc(d.board) + ")" : ""),
       d.modem ? "Zimodem " + esc(d.modem) : "",
-      d.uptime ? "up " + esc(d.uptime) + " min" : ""];
+      d.uptime ? "up " + esc(d.uptime) + " min" : "",
+      '<a href="#" data-ip="' + esc(d.ip) + '">SD card</a>'];
     return "<div>" + bits.filter(x => x).join(" · ") + "</div>";
   }).join("");
+  $("devices").querySelectorAll("a[data-ip]").forEach(a => a.onclick = e => { e.preventDefault(); openCard(a.dataset.ip); });
 }
+
+// ---- the SD card of a computer: list, read, edit, upload, rename, delete
+let cardIp = null, cardTimer = null, cardFile = null, cardShown = -1, cardAsked = 0;
+function kb(n) { return n < 1024 ? n + " B" : Math.round(n / 1024) + " KB"; }
+function openCard(ip) {
+  cardIp = ip; cardFile = null; cardShown = -1;
+  $("cedit").innerHTML = ""; $("cfiles").innerHTML = "";
+  $("card").style.display = "flex";
+  fetch("/_/api/card?ip=" + encodeURIComponent(ip)).then(r => r.json()).then(c => {
+    if (c.listed === null && !c.pending.length) cardOp("op=list"); else renderCard(c);
+  });
+  clearInterval(cardTimer);
+  cardTimer = setInterval(() => cardIp && fetch("/_/api/card?ip=" + encodeURIComponent(cardIp))
+                                 .then(r => r.json()).then(renderCard).catch(() => {}), 3000);
+}
+function closeCard() { cardIp = null; clearInterval(cardTimer); $("card").style.display = "none"; }
+function cardOp(params) {
+  return fetch("/_/card/op?ip=" + encodeURIComponent(cardIp) + "&" + params, { method: "POST" })
+    .then(r => r.ok ? r.json() : Promise.reject(r.statusText)).then(renderCard)
+    .catch(e => alert("Not possible: " + e));
+}
+function renderCard(c) {
+  $("ct").textContent = "SD card of the " + (c.machine || "computer") + " at " + cardIp;
+  $("cs").textContent = [c.listed === null ? "not listed yet" : "listed " + ago(c.listed),
+    c.asks ? "the computer asks every " + c.asks + " s" : "the computer does not ask for jobs: play=on in its ini, then start it again",
+    c.pending.length ? "waiting for the computer: " + c.pending.join(", ") : ""].filter(x => x).join(" · ");
+  $("cr").innerHTML = c.results.slice(0, 6).map(r => "<div>" + esc(r) + "</div>").join("");
+  $("cfiles").innerHTML = c.files.map(f =>
+    "<tr><td>" + (f.dir ? "&#128193; " : "") + esc(f.name) + "</td><td class=\"n\">" + (f.dir ? "" : kb(f.size)) +
+    "</td><td class=\"n\">" + esc(f.date) + "</td><td class=\"a\">" +
+    (f.dir ? "" : '<button data-op="read" data-name="' + esc(f.name) + '">Open</button>') +
+    '<button data-op="ren" data-name="' + esc(f.name) + '">Rename</button>' +
+    '<button data-op="del" data-name="' + esc(f.name) + '">Delete</button></td></tr>').join("");
+  $("cfiles").querySelectorAll("button").forEach(b => b.onclick = () => {
+    const n = b.dataset.name;
+    if (b.dataset.op === "del" && confirm("Delete " + n + " from the card?")) cardOp("op=del&name=" + encodeURIComponent(n));
+    if (b.dataset.op === "ren") {
+      const to = prompt("New name for " + n, n);
+      if (to && to !== n) cardOp("op=ren&name=" + encodeURIComponent(n) + "&to=" + encodeURIComponent(to));
+    }
+    if (b.dataset.op === "read") {
+      cardFile = n; cardShown = -1; cardAsked = Date.now();
+      $("cedit").innerHTML = "<p>" + esc(n) + ": waiting for the computer to send it ...</p>";
+      cardOp("op=read&name=" + encodeURIComponent(n));
+    }
+  });
+  // a file read: shown once it arrives, editable when it is whole
+  const t = cardFile && c.texts[cardFile];
+  if (t && cardShown === -1 && t.when <= (Date.now() - cardAsked) / 1000 + 2) {
+    cardShown = 0;
+    const whole = !t.from;
+    $("cedit").innerHTML = "<p><b>" + esc(cardFile) + "</b>, " + kb(t.size) +
+      (whole ? "" : " -- the last " + kb(t.size - t.from) + " of it, to read") + "</p>" +
+      '<textarea id="ctext"' + (whole ? "" : " readonly") + "></textarea>" +
+      (whole ? '<p><button id="csave">Save to the card</button><button id="cdrop">Close the file</button></p>'
+             : '<p><button id="cdrop">Close the file</button></p>');
+    $("ctext").value = t.text;
+    if (!whole) $("ctext").scrollTop = $("ctext").scrollHeight;
+    $("cdrop").onclick = () => { cardFile = null; $("cedit").innerHTML = ""; };
+    if (whole) $("csave").onclick = () => upload(new File([$("ctext").value.replace(/\r?\n/g, "\r\n")], cardFile));
+  }
+}
+function upload(f) {
+  return fetch("/_/card/upload?ip=" + encodeURIComponent(cardIp) + "&name=" + encodeURIComponent(f.name),
+               { method: "POST", body: f })
+    .then(r => r.ok ? r.json() : Promise.reject(r.status === 413 ? "larger than 6 MB" : r.status === 400 ? "the name does not fit the card: at most 47 characters, none of / \\ : * ? \" < > |" : r.statusText))
+    .then(renderCard).catch(e => alert(f.name + ": " + e));
+}
+$("cup").onchange = () => { Array.from($("cup").files).forEach(upload); $("cup").value = ""; };
+$("crefresh").onclick = () => cardOp("op=list");
+$("cclose").onclick = closeCard;
+$("card").onclick = e => { if (e.target === $("card")) closeCard(); };
 setInterval(() => fetch("/_/api/state").then(r => r.json()).then(st => { showDevices(st.devices); showSent(st.sent); }).catch(() => {}), 15000);
 
 function apply(st) {
@@ -1555,6 +1787,7 @@ $("close").onclick = hide;
 $("detail").onclick = e => { if (e.target === $("detail")) hide(); };
 document.onkeydown = e => {
   if (e.key !== "Escape") return;
+  if ($("card").style.display === "flex") return closeCard();
   if ($("zoom").style.display === "flex") $("zoom").style.display = "none";
   else if ($("detail").style.display === "flex") hide();
 };
@@ -1708,8 +1941,58 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.serve(True)
 
+    def post_body(self, limit):
+        n = int(self.headers.get("Content-Length") or 0)
+        return self.rfile.read(n) if 0 <= n <= limit else None
+
+    def card_post(self, url):
+        """The card's pages: from the companion its list and its files, from
+        the browser the jobs and the uploads."""
+        qs = urllib.parse.parse_qs(url.query)
+        arg = lambda k: qs.get(k, [""])[0]
+        if url.path == "/_/card/list":
+            data = self.post_body(1 << 20)
+            if data is None:
+                return self.fail(413, "Too Large")
+            cards.listing(arg("i") or self.client_address[0], data)
+            return self.send_data(b"OK\n", "text/plain")
+        if url.path == "/_/card/text":
+            data = self.post_body(1 << 20)
+            if data is None:
+                return self.fail(413, "Too Large")
+            num = lambda k: int(arg(k)) if arg(k).isdigit() else 0
+            cards.text(arg("i") or self.client_address[0], arg("name"), data, num("size"), num("from"))
+            return self.send_data(b"OK\n", "text/plain")
+        ip, name = arg("ip"), arg("name")
+        if not ip:
+            return self.fail(400, "Bad Request")
+        q = urllib.parse.quote
+        if url.path == "/_/card/upload":
+            n = int(self.headers.get("Content-Length") or 0)
+            if not CARD_NAME.match(name):
+                return self.fail(400, "Bad Name")
+            if n > UPLOAD_MAX:
+                return self.fail(413, "Too Large")
+            token = uploads.put(name, self.rfile, n)
+            cards.queue(ip, "FILE _up/%s/%s %s" % (token, q(name), q(name)), "upload " + name)
+        elif url.path == "/_/card/op":
+            op = arg("op")
+            if op == "list":
+                cards.queue(ip, "LIST", "list")
+            elif op in ("read", "del") and CARD_NAME.match(name):
+                cards.queue(ip, ("READ " if op == "read" else "DEL ") + q(name), op + " " + name)
+            elif op == "ren" and CARD_NAME.match(name) and CARD_NAME.match(arg("to")):
+                cards.queue(ip, "REN %s %s" % (q(name), q(arg("to"))), "rename " + name)
+            else:
+                return self.fail(400, "Bad Request")
+        else:
+            return self.fail(404, "Not Found")
+        return self.send_data(json.dumps(card_state(ip)).encode(), "application/json")
+
     def do_POST(self):
         url = urllib.parse.urlsplit(self.path)
+        if url.path.startswith("/_/card/"):
+            return self.card_post(url)
         gid = urllib.parse.parse_qs(url.query).get("id", [""])[0]
         g = catalogue.find(gid) if gid else None
         if url.path == "/_/send" and g:
@@ -1756,12 +2039,20 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_data(page_html.encode("utf-8"), "text/html; charset=utf-8", body)
         if parts[1:] == ["job"] or parts[1:] == ["hello"]:
             # the companion asking for a game to play, see Play, or only
-            # saying what it is; both bring its status, see Devices
+            # saying what it is; both bring its status, see Devices. The
+            # answer to /_/job carries the jobs for its card, see Cards.
             devices.heard(self.client_address[0], qs)
             if parts[1:] == ["hello"]:
                 data = b"OK\n"
+            elif not body:
+                data = b"NONE\n"         # a HEAD takes nothing
             else:
-                data = (play.take() if body else "NONE\n").encode()   # a HEAD takes nothing
+                ip = qs.get("i", [self.client_address[0]])[0]
+                jobs = play.take()
+                more = cards.take(ip)
+                if more:
+                    jobs = ("" if jobs == "NONE\n" else jobs) + more
+                data = jobs.encode()
             self.send_response(200, "OK")
             self.send_header("Content-Type", "text/plain; charset=utf-8")
             self.send_header("Content-Length", str(len(data)))
@@ -1777,6 +2068,9 @@ class Handler(BaseHTTPRequestHandler):
             if not g:
                 return self.fail(404, "Not Found")
             return self.send_data(json.dumps(game_detail(g)).encode(), "application/json", body)
+        if parts[1:] == ["api", "card"]:
+            out = card_state(qs.get("ip", [""])[0])
+            return self.send_data(json.dumps(out).encode(), "application/json", body)
         if parts[1:] == ["api", "state"]:
             return self.send_data(json.dumps(state()).encode(), "application/json", body)
         if parts[1:2] == ["api"] and parts[2:3] == ["games"]:
@@ -1805,6 +2099,28 @@ class Handler(BaseHTTPRequestHandler):
         parts = [p for p in path.split("/") if p]
         if any(p in (".", "..") for p in parts):
             return self.fail(403, "Forbidden")
+
+        if parts[:1] == ["_up"] and len(parts) == 3:
+            data = uploads.get(parts[1])
+            if data is None:
+                return self.fail(404, "Not Found")
+            start, end = 0, len(data) - 1
+            m = re.match(r"bytes=(\d+)-(\d*)$", self.headers.get("Range", ""))
+            if m and len(data):
+                start = min(int(m.group(1)), len(data) - 1)
+                end = min(int(m.group(2)), len(data) - 1) if m.group(2) else end
+                self.send_response(206, "Partial Content")
+                self.send_header("Content-Range", "bytes %d-%d/%d" % (start, end, len(data)))
+            else:
+                self.send_response(200, "OK")
+            self.send_header("Content-Type", "application/octet-stream")
+            self.send_header("Content-Length", str(end - start + 1 if len(data) else 0))
+            self.send_header("Connection", "close")
+            self.end_headers()
+            if body:
+                self.wfile.write(data[start:end + 1])
+            self.close_connection = True
+            return
 
         if parts[:1] == ["_"]:
             if path.endswith("/_"):
