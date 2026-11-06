@@ -22,9 +22,10 @@ of ZIP archives in folders, and the companion shows 32 entries at a time.
   levels TOSEC needs before the first game are not three menus with one
   entry each.
 - **A catalogue for the browser** at `/_/`, see below: the whole
-  collection with pictures, search and favourites, and two buttons that
-  put a game at the top of the computer's list, for its SD card or for the
-  USB stick on its hub.
+  collection with pictures, search and favourites, a **Play** button that
+  starts a game on the computer, and two buttons that put a game at the
+  top of the computer's list, for its SD card or for the USB stick on its
+  hub.
 
 It reads your collection and never writes to it. Python only, no
 dependencies, one file — you can read what it does.
@@ -34,9 +35,10 @@ runs one for each, see "For the C64" below.
 
 It belongs to the companion pinned in this repository: the one that walks
 into folders, shows *Reload list* and the `> ` of a game sent from the
-catalogue -- and `USB> ` and *Save to* from companion `ec8acf4` on. An
-older companion shows a game sent to the stick unmarked and puts it on
-the card.
+catalogue -- and `USB> ` and *Save to* from companion `ec8acf4` on, and
+*Play* from `e249792` on. An older companion shows a game sent to the
+stick unmarked and puts it on the card, and does not ask for a game to
+play.
 
 ## On a Synology NAS
 
@@ -90,6 +92,15 @@ screenshot, title screen, box and logo where there are any.
 - **A set of disks once**: "(Disk 1 of 3)" ... is shown as its first disk,
   marked *3 disks*, and sending it sends all three, the first on top.
 
+- **Play**, in a game's view: the computer fetches the game, puts it into
+  its drive and starts afresh -- the ST boots from it, the C64 gets
+  `LOAD"*",8,1` and `RUN` typed. For that the companion asks stserve every
+  few seconds at `/_/job`, which needs `play=on` in the computer's ini
+  (`atarist.ini`, `c64.ini`); see the companion's
+  [DOWNLOAD.md](../sources/FPGA-Companion/DOWNLOAD.md), *One click to
+  play*. The page says when the computer last asked: without `play=` it
+  never does, and the game waits at the top of its list, marked `> `. A
+  game nobody fetched within ten minutes is no longer started.
 - **Send to the SD card**, in a game's view: the game is offered at the
   top of every list the companion fetches, marked `> `. On the computer:
   Shift+F12, *Download...*, *Reload list*, and it is the first entry. Once

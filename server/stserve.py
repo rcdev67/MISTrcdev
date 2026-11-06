@@ -1010,6 +1010,53 @@ class Favourites(Sent):
 favourites = Favourites()
 
 
+# ------------------------------------------------------------ play now ----
+#
+# "Play" in a game's view: the game is sent to the card as above and waits
+# here as a job. A companion with play= in its ini asks for it at /_/job
+# every few seconds, fetches the disks, puts the first into its drive and
+# starts the machine afresh. A job nobody asked for within ten minutes is
+# dropped; the game stays at the top of the list, marked "> ".
+
+class Play:
+    AGE = 600
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.names = []           # the disks of the game waiting, first one first
+        self.title = ""
+        self.when = 0.0
+        self.asked = 0.0          # when a companion last asked
+
+    def put(self, g):
+        disks = [catalogue.find(i) for i in (g.set or [g.id])]
+        with self.lock:
+            self.names = [d.name for d in disks if d]
+            self.title = g.title
+            self.when = time.time()
+
+    def take(self):
+        """The job as the companion reads it, once."""
+        with self.lock:
+            self.asked = time.time()
+            if not self.names or time.time() - self.when > self.AGE:
+                self.names = []
+                return "NONE\n"
+            lines = ["PLAY " + urllib.parse.quote(self.names[0])]
+            lines += ["DISK " + urllib.parse.quote(n) for n in self.names[1:4]]
+            self.names = []
+            return "\n".join(lines) + "\n"
+
+    def to_json(self):
+        with self.lock:
+            waiting = self.title if self.names and time.time() - self.when <= self.AGE else ""
+            return {"waiting": waiting,
+                    "asked": int(time.time() - self.asked) if self.asked else None}
+
+
+play = Play()
+
+
 def sent_lines():
     """The sent games as the first lines of a listing, marked "> ", or
     "USB> " for the stick."""
@@ -1021,7 +1068,7 @@ def sent_lines():
 def state():
     """What the page shows besides the games: sent ones and favourites."""
     return {"sent": [dict(g.to_json(), usb=sent.to_usb(g.id)) for g in sent.games()],
-            "favourites": list(favourites.ids)}
+            "favourites": list(favourites.ids), "play": play.to_json()}
 
 
 # A TOSEC collection files its disks under Games, Applications, Demos,
@@ -1141,8 +1188,9 @@ main { padding:16px; }
 #detail .pics { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
 #detail .pics img { max-width:calc(50% - 4px); max-height:260px; border-radius:4px; background:#000; }
 #detail button { padding:9px 16px; font:inherit; cursor:pointer; border-radius:6px; border:0; }
-#send { background:var(--accent); color:#fff; }
-#sendusb { background:var(--accent); color:#fff; margin-left:8px; }
+#play { background:var(--accent); color:#fff; margin-right:8px; font-weight:600; }
+#send { background:var(--line); color:var(--text); }
+#sendusb { background:var(--line); color:var(--text); margin-left:8px; }
 #fav { background:var(--line); color:var(--text); margin-left:8px; }
 #close { background:var(--line); color:var(--text); margin-left:8px; }
 #hint { color:var(--dim); font-size:13px; margin-top:10px; }
@@ -1163,7 +1211,7 @@ main { padding:16px; }
   <h2 id="dt"></h2><div class="facts" id="df"></div>
   <div class="pics" id="dp"></div>
   <p class="desc" id="dd"></p>
-  <button id="send">Send to the SD card</button><button id="sendusb">Send to the USB stick</button><button id="fav"></button><button id="close">Close</button>
+  <button id="play">&#9654; Play</button><button id="send">Send to the SD card</button><button id="sendusb">Send to the USB stick</button><button id="fav"></button><button id="close">Close</button>
   <div id="hint"></div>
 </div></div>
 <script>
@@ -1292,6 +1340,17 @@ function send(usb) {
 }
 $("send").onclick = () => send(false);
 $("sendusb").onclick = () => send(true);
+// "Play": the computer asks every few seconds when play= is in its ini;
+// whether it has asked lately says if it will start the game itself
+function playHint(st) {
+  const p = st.play || {};
+  if (p.asked !== null && p.asked !== undefined && p.asked < 90)
+    return "The computer asked " + p.asked + " s ago: it fetches the game when it asks next and starts it -- a C64 disk with LOAD and RUN.";
+  return "The computer has not asked for a game lately: put play=on into its ini (atarist.ini or c64.ini) and start it again. " +
+         "Until then the game is at the top of its list, marked > -- Shift+F12, Download..., Reload list.";
+}
+$("play").onclick = () => fetch("/_/play?id=" + current.id, { method: "POST" })
+  .then(r => r.json()).then(st => { apply(st); $("hint").textContent = playHint(st); });
 $("fav").onclick = () => { toggleFav(current); };
 $("close").onclick = () => $("detail").style.display = "none";
 $("detail").onclick = e => { if (e.target === $("detail")) $("detail").style.display = "none"; };
@@ -1455,6 +1514,11 @@ class Handler(BaseHTTPRequestHandler):
             usb = urllib.parse.parse_qs(url.query).get("to", [""])[0] == "usb"
             for one in reversed(g.set or [gid]):
                 sent.add(one, usb)
+        elif url.path == "/_/play" and g:
+            # sent to the card like any other, and waiting as the job
+            for one in reversed(g.set or [gid]):
+                sent.add(one)
+            play.put(g)
         elif url.path == "/_/unsend":
             sent.remove(gid)
         elif url.path == "/_/fav" and catalogue.find(gid):
@@ -1486,6 +1550,19 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 page_html = CATALOGUE_HTML.replace("__TITLE__", html.escape(TITLE))
                 return self.send_data(page_html.encode("utf-8"), "text/html; charset=utf-8", body)
+        if parts[1:] == ["job"]:
+            # the companion asking for a game to play, see Play
+            data = (play.take() if body else "NONE\n").encode()   # a HEAD takes nothing
+            self.send_response(200, "OK")
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            if body:
+                self.wfile.write(data)
+            self.close_connection = True
+            return
         if parts[1:2] == ["api"] and parts[2:3] == ["games"]:
             def num(k, d):
                 try:

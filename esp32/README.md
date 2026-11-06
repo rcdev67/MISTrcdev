@@ -41,7 +41,9 @@ GPIO4, 5, 6 and 9 next to them are Zimodem's modem lines and stay free. It shows
 - while a program comes from the server: `FETCH 45% 120 KB/s` with a bar
   across the screen, then `SEND 30% 40 KB/s` the same way while it goes to
   the companion, and *sent* with the bar full; then the file's name,
-  `> Arkanoid.ST`, until the next one
+  `> Arkanoid.ST`, until the next one. stserve's own requests, `/_/...`
+  -- the companion asking for a game to play every few seconds -- are
+  not shown
 
 Without a display nothing changes: the modem looks for one every five
 seconds and nothing waits for it. All of the I2C runs in a task of its own,

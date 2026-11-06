@@ -235,6 +235,16 @@ files long folders by letter, so a game is three or four turns of the
 knob away instead of a list nothing can show. It needs nothing but
 Python, and runs as a container on a Synology.
 
+**One click to play.** stserve's catalogue in the browser has a **Play**
+button: the ST fetches the game, puts it into drive A and boots from it.
+For that `atarist.ini` needs one more line, which makes the companion ask
+the server every 10 seconds:
+
+    play=on
+
+Not while a terminal program on the ST is online over the modem: each
+question takes the modem from the serial port for a second or two.
+
 The details, other modem boards and how it works are in
 [DOWNLOAD.md](../sources/FPGA-Companion/DOWNLOAD.md).
 

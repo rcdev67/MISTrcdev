@@ -388,6 +388,11 @@ inside (a `.prg` stays a `.prg`), and files thousands of games into menus
 of thirty. **In a browser**, `http://<nas-ip>:8889/_/` shows the collection
 with pictures, a search and the first letters:
 
+- **Play** starts it on the C64: fetched onto the card, into the floppy,
+  a cold start, `LOAD"*",8,1` and `RUN` typed by the companion -- with
+  `play=on` in `c64.ini`, which makes the companion ask the server every
+  10 seconds. Not with a terminal program online over the modem: each
+  question takes the modem from the 6551 for a second or two.
 - **Send to the SD card** puts a game at the top of every list on the
   C64, marked `> ` -- *Reload list* and it is the first entry.
   **Send to the USB stick** does the same, marked `USB> `, and the game
