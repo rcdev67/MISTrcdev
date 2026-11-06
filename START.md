@@ -319,7 +319,9 @@ with your PC's address instead of `192.168.1.20` (`ipconfig` shows it,
     server=192.168.1.20:8888
 
 For a whole collection, with pictures in the browser, there is
-[stserve](server/README.md), on the PC or on a NAS.
+[stserve](server/README.md), on the PC or on a NAS. Its catalogue sends a
+game to the SD card or to the USB stick, and the *Download* window's
+second line, *Save to*, picks between the two as well.
 
 ## 10. Both machines on one board
 

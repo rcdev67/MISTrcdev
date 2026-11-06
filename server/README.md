@@ -22,8 +22,9 @@ of ZIP archives in folders, and the companion shows 32 entries at a time.
   levels TOSEC needs before the first game are not three menus with one
   entry each.
 - **A catalogue for the browser** at `/_/`, see below: the whole
-  collection with pictures, search and favourites, and a button that puts
-  a game at the top of the computer's list.
+  collection with pictures, search and favourites, and two buttons that
+  put a game at the top of the computer's list, for its SD card or for the
+  USB stick on its hub.
 
 It reads your collection and never writes to it. Python only, no
 dependencies, one file — you can read what it does.
@@ -33,7 +34,9 @@ runs one for each, see "For the C64" below.
 
 It belongs to the companion pinned in this repository: the one that walks
 into folders, shows *Reload list* and the `> ` of a game sent from the
-catalogue.
+catalogue -- and `USB> ` and *Save to* from companion `ec8acf4` on. An
+older companion shows a game sent to the stick unmarked and puts it on
+the card.
 
 ## On a Synology NAS
 
@@ -87,10 +90,15 @@ screenshot, title screen, box and logo where there are any.
 - **A set of disks once**: "(Disk 1 of 3)" ... is shown as its first disk,
   marked *3 disks*, and sending it sends all three, the first on top.
 
-- **Send to the computer**, in a game's view: the game is offered at the
+- **Send to the SD card**, in a game's view: the game is offered at the
   top of every list the companion fetches, marked `> `. On the computer:
   Shift+F12, *Download...*, *Reload list*, and it is the first entry. Once
   it has been fetched it is no longer offered.
+- **Send to the USB stick**: the same, marked `USB> `, and the companion
+  puts it on the USB stick on the hub instead of the card -- a stick full
+  of games for another computer, or for later. Without a stick there the
+  download says *No USB stick on the hub*. The list of sent games above
+  the catalogue says `USB:` in front of these.
 - **The star** makes a game a favourite. Favourites are a folder of their
   own at the top of the computer's list, `Favourites/`, for the few games
   a player comes back to out of thousands; **★** in the letter bar shows

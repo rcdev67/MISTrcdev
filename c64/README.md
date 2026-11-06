@@ -388,8 +388,10 @@ inside (a `.prg` stays a `.prg`), and files thousands of games into menus
 of thirty. **In a browser**, `http://<nas-ip>:8889/_/` shows the collection
 with pictures, a search and the first letters:
 
-- **Send to the computer** puts a game at the top of every list on the
+- **Send to the SD card** puts a game at the top of every list on the
   C64, marked `> ` -- *Reload list* and it is the first entry.
+  **Send to the USB stick** does the same, marked `USB> `, and the game
+  goes onto the stick on the hub.
 - **The star** makes it a favourite: they are the folder `Favourites/` at
   the top of the list.
 
@@ -406,8 +408,10 @@ to your setting afterwards. *Netz* is in the list only so it can do that.
 In the *Download* window **Return fetches the marked file again**; leave it
 with **Esc**. The list is fetched once per folder: **Reload list**, its
 first line, fetches it again, for a file put on the server meanwhile or a
-game sent from the browser. A typed letter goes to the first entry starting
-with it.
+game sent from the browser. Its second line, **Save to**, switches between
+the SD card and a USB stick on the hub; the core loads disks from the card
+only, *From USB* copies one over. A typed letter goes to the first entry
+starting with it.
 
 **Slower than on the ST.** The C64 core has no block RAM left, so the
 port's buffers are 15 bytes in distributed RAM instead of the ST's 255. At

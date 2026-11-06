@@ -494,10 +494,12 @@ def buckets(entries, depth=1):
 #
 # The same collection for a browser, at /_/: every game of every folder in
 # one place, with its year, its publisher and a picture, searchable, and a
-# button that sends it to the computer. A game sent is offered at the top of
+# buttons that send it to the computer. A game sent is offered at the top of
 # every listing the companion fetches, under its usual name and marked
 # "> ", so on the computer it is one key away: Download..., Reload list,
-# Return. Once fetched it is no longer offered.
+# Return. Once fetched it is no longer offered. One sent to the USB stick is
+# marked "USB> " instead, and the companion puts it on the stick: a stick
+# full of games for another computer, or for later.
 #
 # Favourites stay: the games starred in the browser are a folder of their
 # own at the top of the collection, "Favourites", for the few a player
@@ -894,39 +896,58 @@ class Sent:
 
     def __init__(self):
         self.ids = []
+        self.usb = set()             # the ones for the USB stick
         self.lock = threading.Lock()
         d = cache_dir()
         self.path = os.path.join(d, "sent.json") if d else None
         if self.path:
             try:
                 with open(self.path, encoding="utf-8") as f:
-                    self.ids = [i for i in json.load(f) if isinstance(i, str)]
-            except (OSError, ValueError):
+                    data = json.load(f)
+                # a list of ids before there was a stick to send to
+                if isinstance(data, dict):
+                    self.usb = {i for i in data.get("usb", []) if isinstance(i, str)}
+                    data = data.get("ids", [])
+                self.ids = [i for i in data if isinstance(i, str)]
+                self.usb &= set(self.ids)
+            except (OSError, ValueError, AttributeError):
                 pass
+
+    def dump(self):
+        return {"ids": self.ids, "usb": sorted(self.usb)}
 
     def save(self):
         if not self.path:
             return
         try:
             with open(self.path + ".tmp", "w", encoding="utf-8") as f:
-                json.dump(self.ids, f)
+                json.dump(self.dump(), f)
             os.replace(self.path + ".tmp", self.path)
         except OSError:
             pass
 
-    def add(self, gid):
+    def add(self, gid, usb=False):
         with self.lock:
             if gid in self.ids:
                 self.ids.remove(gid)
             self.ids.insert(0, gid)
             del self.ids[8:]         # a handful, the menu shows few lines
+            if usb:
+                self.usb.add(gid)
+            else:
+                self.usb.discard(gid)
+            self.usb &= set(self.ids)
             self.save()
 
     def remove(self, gid):
         with self.lock:
             if gid in self.ids:
                 self.ids.remove(gid)
+                self.usb.discard(gid)
                 self.save()
+
+    def to_usb(self, gid):
+        return gid in self.usb
 
     def games(self):
         out = []
@@ -965,7 +986,10 @@ class Favourites(Sent):
             except (OSError, ValueError):
                 pass
 
-    def add(self, gid):
+    def dump(self):
+        return self.ids
+
+    def add(self, gid, usb=False):
         with self.lock:
             if gid not in self.ids:
                 self.ids.append(gid)
@@ -987,14 +1011,17 @@ favourites = Favourites()
 
 
 def sent_lines():
-    """The sent games as the first lines of a listing, marked "> "."""
-    return ["<li><a href=\"%s\">&gt; %s</a></li>" % (urllib.parse.quote(g.name), html.escape(g.name))
+    """The sent games as the first lines of a listing, marked "> ", or
+    "USB> " for the stick."""
+    return ["<li><a href=\"%s\">%s&gt; %s</a></li>"
+            % (urllib.parse.quote(g.name), "USB" if sent.to_usb(g.id) else "", html.escape(g.name))
             for g in sent.games()]
 
 
 def state():
     """What the page shows besides the games: sent ones and favourites."""
-    return {"sent": [g.to_json() for g in sent.games()], "favourites": list(favourites.ids)}
+    return {"sent": [dict(g.to_json(), usb=sent.to_usb(g.id)) for g in sent.games()],
+            "favourites": list(favourites.ids)}
 
 
 # A TOSEC collection files its disks under Games, Applications, Demos,
@@ -1115,6 +1142,7 @@ main { padding:16px; }
 #detail .pics img { max-width:calc(50% - 4px); max-height:260px; border-radius:4px; background:#000; }
 #detail button { padding:9px 16px; font:inherit; cursor:pointer; border-radius:6px; border:0; }
 #send { background:var(--accent); color:#fff; }
+#sendusb { background:var(--accent); color:#fff; margin-left:8px; }
 #fav { background:var(--line); color:var(--text); margin-left:8px; }
 #close { background:var(--line); color:var(--text); margin-left:8px; }
 #hint { color:var(--dim); font-size:13px; margin-top:10px; }
@@ -1135,7 +1163,7 @@ main { padding:16px; }
   <h2 id="dt"></h2><div class="facts" id="df"></div>
   <div class="pics" id="dp"></div>
   <p class="desc" id="dd"></p>
-  <button id="send">Send to the computer</button><button id="fav"></button><button id="close">Close</button>
+  <button id="send">Send to the SD card</button><button id="sendusb">Send to the USB stick</button><button id="fav"></button><button id="close">Close</button>
   <div id="hint"></div>
 </div></div>
 <script>
@@ -1197,7 +1225,7 @@ function toggleFav(g) {
 
 function showSent(list) {
   $("sent").innerHTML = list.length ? "Sent to the computer: " + list.map(g =>
-    '<span class="g">' + esc(g.title) + ' <small>' + esc(g.name) + '</small><b data-id="' + g.id +
+    '<span class="g">' + esc(g.title) + ' <small>' + (g.usb ? 'USB: ' : '') + esc(g.name) + '</small><b data-id="' + g.id +
     '" title="remove">×</b></span>').join("") : "";
   $("sent").querySelectorAll("b").forEach(b => b.onclick = () =>
     fetch("/_/unsend?id=" + b.dataset.id, { method: "POST" }).then(r => r.json()).then(apply));
@@ -1252,13 +1280,18 @@ function show(g) {
   $("detail").style.display = "flex";
 }
 
-$("send").onclick = () => fetch("/_/send?id=" + current.id, { method: "POST" })
-  .then(r => r.json()).then(st => {
-    apply(st);
-    $("hint").textContent = "On the computer: Shift+F12, Download..., Reload list -- " +
-                            "> " + current.name + " is at the top" +
-                            (current.disks > 1 ? ", the other " + (current.disks - 1) + " disks right below." : ".");
-  });
+function send(usb) {
+  fetch("/_/send?id=" + current.id + (usb ? "&to=usb" : ""), { method: "POST" })
+    .then(r => r.json()).then(st => {
+      apply(st);
+      $("hint").textContent = "On the computer: Shift+F12, Download..., Reload list -- " +
+                              (usb ? "USB> " : "> ") + current.name + " is at the top" +
+                              (current.disks > 1 ? ", the other " + (current.disks - 1) + " disks right below" : "") +
+                              (usb ? ". It goes to the USB stick on the hub." : ".");
+    });
+}
+$("send").onclick = () => send(false);
+$("sendusb").onclick = () => send(true);
 $("fav").onclick = () => { toggleFav(current); };
 $("close").onclick = () => $("detail").style.display = "none";
 $("detail").onclick = e => { if (e.target === $("detail")) $("detail").style.display = "none"; };
@@ -1417,9 +1450,11 @@ class Handler(BaseHTTPRequestHandler):
         gid = urllib.parse.parse_qs(url.query).get("id", [""])[0]
         g = catalogue.find(gid) if gid else None
         if url.path == "/_/send" and g:
-            # all disks of a set, the first one on top of the list
+            # all disks of a set, the first one on top of the list; to the
+            # SD card, or with to=usb to the USB stick
+            usb = urllib.parse.parse_qs(url.query).get("to", [""])[0] == "usb"
             for one in reversed(g.set or [gid]):
-                sent.add(one)
+                sent.add(one, usb)
         elif url.path == "/_/unsend":
             sent.remove(gid)
         elif url.path == "/_/fav" and catalogue.find(gid):
@@ -1600,7 +1635,7 @@ class Handler(BaseHTTPRequestHandler):
                     self.wfile.write(chunk)
                     left -= len(chunk)
                 if sent_game and end == size - 1:
-                    sent.remove(sent_game.id)     # it is on the card now
+                    sent.remove(sent_game.id)     # it is on the card or the stick now
         except (BrokenPipeError, ConnectionResetError, socket.timeout):
             self.log_message("transfer of %s broke off", e.name)
         finally:

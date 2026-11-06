@@ -218,7 +218,9 @@ Put `.ST` images on the card with a PC, or let the ST fetch them:
 
 3. On the ST: F12, `Download...`, `Load file list`, pick a file. It lands
    on the card; then choose it under `Disk A:`. A 720 KB image takes about
-   half a minute.
+   half a minute. `Save to:`, the list's second line, sends files to a USB
+   stick on the hub instead, to keep them; the ST loads disks from the
+   card only, `From USB` in the system menu copies one over.
 
 Names ending in a slash are folders: pick one to see what is in it, `..`
 goes back up. A folder in the `server=` line works too, so
