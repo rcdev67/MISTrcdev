@@ -120,7 +120,7 @@ screenshot, title screen, box and logo where there are any.
   stserve a computer shows up again the next time it reports.
 - **The SD card** of a computer, *SD card* in its line: the files in the
   card's root with size and date; **Open** shows a file -- an ini to edit
-  and **Save to the card**, the last 16 KB of `NETLOG.TXT` to read --
+  and **Save to the card**, the last 4 KB of `NETLOG.TXT` to read --
   **Rename**, **Delete**, and **Upload files ...** puts files from the PC
   onto the card, up to 6 MB each (the modem holds a whole file in its
   memory). It works through the same questions as *Play*, so the computer

@@ -1108,7 +1108,7 @@ devices = Devices()
 # companion cannot be reached; it asks at /_/job with play= in its ini, and
 # the answer carries the jobs for its card, one a line (see net.c,
 # card_job_parse()). It sends the list and the files it reads back by POST
-# to /_/card/list and /_/card/text. A file uploaded here waits at
+# to /_/card/put, see Cards.put. A file uploaded here waits at
 # /_up/<token>/<name> until the companion has fetched it.
 
 CARD_NAME = re.compile(r'^[^./\\:*?"<>|][^/\\:*?"<>|]{0,46}$')
@@ -1119,6 +1119,7 @@ class Cards:
     def __init__(self):
         self.lock = threading.Lock()
         self.by_ip = {}
+        self.pieces = {}          # (ip, kind): what came of a list or a file
 
     def _card(self, ip):
         return self.by_ip.setdefault(ip, {"files": [], "listed": 0.0, "results": [],
@@ -1156,6 +1157,40 @@ class Cards:
             c = self._card(ip)
             c["files"], c["listed"], c["sent"] = files, time.time(), []
             c["results"] = (results + c["results"])[:20]
+
+    # The companion's data comes in pieces, each a fetch of
+    # /_/card/put?i=..&k=list|text&s=<piece>&d=<data>[&e=1]: through the
+    # modem it can only fetch. A piece arriving twice (a fetch repeated)
+    # counts once; one out of order drops what was gathered.
+    def put(self, ip, qs):
+        arg = lambda k: qs.get(k, [""])[0]
+        kind, piece = arg("k"), int(arg("s")) if arg("s").isdigit() else -1
+        if kind not in ("list", "text") or piece < 0:
+            return "ERR what\n"
+        key = (ip, kind)
+        with self.lock:
+            got = self.pieces.get(key)
+            if piece == 0:
+                got = self.pieces[key] = {"next": 0, "data": bytearray()}
+            if got is None:
+                return "ERR no start\n"
+            if piece == got["next"] - 1:
+                return "OK again\n"      # the last one, too: its answer got lost
+            if got.get("done") or piece != got["next"]:
+                del self.pieces[key]
+                return "ERR piece %d, not %d\n" % (piece, got["next"])
+            got["data"] += arg("d").encode("latin-1")
+            got["next"] += 1
+            if "e" not in qs:
+                return "OK\n"
+            data = bytes(got["data"])
+            got["data"], got["done"] = bytearray(), True
+        num = lambda k: int(arg(k)) if arg(k).isdigit() else 0
+        if kind == "list":
+            self.listing(ip, data)
+        else:
+            self.text(ip, arg("name"), data, num("size"), num("from"))
+        return "OK\n"
 
     def text(self, ip, name, data, size, frm):
         with self.lock:
@@ -2064,6 +2099,15 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 page_html = CATALOGUE_HTML.replace("__TITLE__", html.escape(TITLE))
                 return self.send_data(page_html.encode("utf-8"), "text/html; charset=utf-8", body)
+        if parts[1:] == ["card", "put"]:
+            # the companion's list and files, a piece a fetch, see Cards.put
+            if not body:
+                data = b"OK\n"          # a HEAD takes nothing
+            else:
+                q = urllib.parse.parse_qs(url.query, keep_blank_values=True, encoding="latin-1")
+                ip = q.get("i", [self.client_address[0]])[0]
+                data = cards.put(ip, q).encode()
+            return self.send_data(data, "text/plain", body)
         if parts[1:] == ["job"] or parts[1:] == ["hello"]:
             # the companion asking for a game to play, see Play, or only
             # saying what it is; both bring its status, see Devices. The
