@@ -1777,6 +1777,9 @@ function playHint(st) {
   const p = st.play || {};
   if (p.asked !== null && p.asked !== undefined && p.asked < 90)
     return "The computer asked " + p.asked + " s ago: it fetches the game when it asks next and starts it -- a C64 disk with LOAD and RUN.";
+  if (p.asked !== null && p.asked !== undefined && p.asked < 600)
+    return "The computer last asked " + p.asked + " s ago -- its questions have been failing, it tries again every minute or so. " +
+           "The game waits ten minutes; it is also at the top of its list, marked > -- Shift+F12, Download..., Reload list.";
   return "The computer has not asked for a game lately: put play=on into its ini (atarist.ini or c64.ini) and start it again. " +
          "Until then the game is at the top of its list, marked > -- Shift+F12, Download..., Reload list.";
 }
@@ -1945,21 +1948,45 @@ class Handler(BaseHTTPRequestHandler):
         n = int(self.headers.get("Content-Length") or 0)
         return self.rfile.read(n) if 0 <= n <= limit else None
 
+    def companion_body(self, limit):
+        """A body from the companion, through the modem: when bytes went
+        missing on the way it stops short, and waiting for them helps
+        nobody. After 12 s of silence the answer says how much came, which
+        the companion writes to its NETLOG.TXT."""
+        n = int(self.headers.get("Content-Length") or 0)
+        if not 0 <= n <= limit:
+            self.fail(413, "Too Large")
+            return None
+        self.connection.settimeout(12)
+        data = b""
+        try:
+            while len(data) < n:
+                part = self.rfile.read1(n - len(data)) if hasattr(self.rfile, "read1") else self.rfile.read(n - len(data))
+                if not part:
+                    break
+                data += part
+        except (socket.timeout, OSError):
+            pass
+        if len(data) < n:
+            self.fail(408, "got %d of %d bytes" % (len(data), n))
+            return None
+        return data
+
     def card_post(self, url):
         """The card's pages: from the companion its list and its files, from
         the browser the jobs and the uploads."""
         qs = urllib.parse.parse_qs(url.query)
         arg = lambda k: qs.get(k, [""])[0]
         if url.path == "/_/card/list":
-            data = self.post_body(1 << 20)
+            data = self.companion_body(1 << 20)
             if data is None:
-                return self.fail(413, "Too Large")
+                return
             cards.listing(arg("i") or self.client_address[0], data)
             return self.send_data(b"OK\n", "text/plain")
         if url.path == "/_/card/text":
-            data = self.post_body(1 << 20)
+            data = self.companion_body(1 << 20)
             if data is None:
-                return self.fail(413, "Too Large")
+                return
             num = lambda k: int(arg(k)) if arg(k).isdigit() else 0
             cards.text(arg("i") or self.client_address[0], arg("name"), data, num("size"), num("from"))
             return self.send_data(b"OK\n", "text/plain")
