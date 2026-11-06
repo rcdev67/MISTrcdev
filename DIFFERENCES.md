@@ -115,22 +115,24 @@ for it. The other Tang boards, the MiSTle boards and the Efinix T20 may
 still build from our forks, but nobody here has tried. For those, use
 the maintainers' releases.
 
-**Behind upstream.** The companion fork left upstream on 17 October 2026;
-upstream has added about fifty commits since that are not here, among
-them support for several joystick HID descriptors in one device (the Data
-Frog PC7), hotkey and LED settings in `config.ini`, and build scripts for
-other MCUs. The cores' forks are older still. We take over fixes one by
-one, not in bulk.
+**Not everything upstream has done since.** The companion fork left
+upstream on 17 October 2026. What upstream added afterwards and is not
+here:
 
-**The companion only on the BL616.** Upstream's companion also runs on an
-RP2040/RP2350 and an ESP32-S2/S3. Ours is only built and tested on the
-Nano 20K's onboard BL616; our additions -- the network download, the
-Bluetooth adapter, the core change into the flash -- are written for it.
+- **Several configurations per core**: a core whose XML declares a
+  *Config* selector can keep more than one ini and switch between them
+  in the menu. Our C64 and ST cores do not declare one, so for them
+  nothing is missing yet.
+- **Two controllers in one USB device**, such as the Data Frog twin
+  controllers and the PC7: upstream reads every joystick such a device
+  reports, ours only one of them.
+- The OSD hotkey and the LED setting moved from the core's ini into
+  `config.ini`, by key name; build scripts for other MCUs and boards.
 
-**More hardware.** The network needs an ESP32-S3 DevKitC-1 (N16R8), four
-jumper wires and a 470 uF capacitor at its power pins; Bluetooth needs a USB hub
-and an RTL8761B adapter. Without them both machines run as upstream's
-do, but most of what is listed above is gone.
+What mattered for these machines is taken over, one change at a time:
+upstream's fixes for the SD card code and the Delete key that ejects a
+drive. The cores are up to date: upstream's C64Nano and MiSTeryNano have
+nothing newer than our forks.
 
 **The C64 gave up MIDI.** On the Nano 20K the C64 core had no block RAM
 left for the companion's network port; MIDI is off on this board and its
@@ -154,14 +156,6 @@ why both are off unless switched on in the ini.
 **stserve is for the home network.** It has no passwords. Whoever reaches
 it can send games, start them, and change the files on a machine's SD
 card. Do not open it to the internet.
-
-**Licences that limit what you may do.** The companion contains BTstack,
-free for personal, non-commercial use only. Building something to sell on
-top of our companion fork needs a licence from BlueKitchen.
-
-**Tested by few.** Everything here runs on our boards, at our desk, with
-our games. A release says what ran on a board and what did not; a feature
-marked untested there has not been tried by anybody yet.
 
 ## Unchanged
 
