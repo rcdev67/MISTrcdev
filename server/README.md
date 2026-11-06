@@ -36,7 +36,7 @@ runs one for each, see "For the C64" below.
 It belongs to the companion pinned in this repository: the one that walks
 into folders, shows *Reload list* and the `> ` of a game sent from the
 catalogue -- and `USB> ` and *Save to* from companion `ec8acf4` on, and
-*Play* from `e249792` on. An older companion shows a game sent to the
+*Play* from `e249792` on, the device status from `80d0707` on. An older companion shows a game sent to the
 stick unmarked and puts it on the card, and does not ask for a game to
 play.
 
@@ -101,6 +101,14 @@ screenshot, title screen, box and logo where there are any.
   play*. The page says when the computer last asked: without `play=` it
   never does, and the game waits at the top of its list, marked `> `. A
   game nobody fetched within ten minutes is no longer started.
+- **The computers** that use the server, a line each above the games: the
+  machine and its address, when it was last heard of (a green dot while
+  it asks for games to play), the WiFi signal, the image in its first
+  drive and the last file it fetched, whether *Play* is on, the commit and
+  board of its companion and Zimodem's version. A companion reports with
+  every question for a game, and with `play=` off once after it starts and
+  after every download, at `/_/hello`. Kept in memory: after a restart of
+  stserve a computer shows up again the next time it reports.
 - **Send to the SD card**, in a game's view: the game is offered at the
   top of every list the companion fetches, marked `> `. On the computer:
   Shift+F12, *Download...*, *Reload list*, and it is the first entry. Once

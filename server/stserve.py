@@ -1057,6 +1057,50 @@ class Play:
 play = Play()
 
 
+# ---------------------------------------------------------- the devices ----
+#
+# A companion says what it is with every question for a game to play, once
+# after it starts and after every download: the core, its own commit and
+# board, the modem's firmware and address, the WiFi signal, the image in
+# its first drive and the last file that arrived. The catalogue shows it
+# above the games. Kept in memory only: after a restart of stserve a
+# computer shows up again the next time it asks.
+
+CORE_NAMES = {"misterynano": "Atari ST", "c64nano": "C64", "nanomig": "Amiga"}
+DEVICE_KEYS = {"c": "core", "v": "companion", "b": "board", "m": "modem", "i": "ip",
+               "r": "rssi", "u": "uptime", "p": "play", "d": "drive", "l": "last"}
+
+
+class Devices:
+    AGE = 24 * 3600              # a computer not heard of for a day is gone
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.by_ip = {}
+
+    def heard(self, client, qs):
+        d = {name: qs[k][0][:48] for k, name in DEVICE_KEYS.items() if qs.get(k)}
+        if not d:
+            return
+        ip = d.get("ip") or client
+        d["ip"] = ip
+        d["machine"] = CORE_NAMES.get(d.get("core", "").lower(), d.get("core", ""))
+        d["seen"] = time.time()
+        with self.lock:
+            self.by_ip[ip] = d
+
+    def to_json(self):
+        now = time.time()
+        with self.lock:
+            for ip in [ip for ip, d in self.by_ip.items() if now - d["seen"] > self.AGE]:
+                del self.by_ip[ip]
+            out = [dict(d, ago=int(now - d["seen"])) for d in self.by_ip.values()]
+        return sorted(out, key=lambda d: d["ago"])
+
+
+devices = Devices()
+
+
 def sent_lines():
     """The sent games as the first lines of a listing, marked "> ", or
     "USB> " for the stick."""
@@ -1068,7 +1112,8 @@ def sent_lines():
 def state():
     """What the page shows besides the games: sent ones and favourites."""
     return {"sent": [dict(g.to_json(), usb=sent.to_usb(g.id)) for g in sent.games()],
-            "favourites": list(favourites.ids), "play": play.to_json()}
+            "favourites": list(favourites.ids), "play": play.to_json(),
+            "devices": devices.to_json()}
 
 
 # A TOSEC collection files its disks under Games, Applications, Demos,
@@ -1152,6 +1197,11 @@ h1 small { color:var(--dim); font-weight:normal; }
 #cats button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
 #cats button.on small { color:#fffc; }
 #sent { margin-top:8px; font-size:13px; color:var(--dim); }
+#devices { margin-top:6px; font-size:13px; color:var(--dim); }
+#devices div { margin:2px 0; }
+#devices b { color:var(--text); }
+#devices .on { color:#3c3; }
+#devices .off { color:var(--dim); }
 #sent span.g { display:inline-block; margin:2px 4px 2px 0; padding:2px 8px;
   background:var(--panel); border:1px solid var(--ok); border-radius:12px; color:var(--text); }
 #sent span.g b { cursor:pointer; color:var(--dim); margin-left:6px; }
@@ -1201,6 +1251,7 @@ main { padding:16px; }
   <div id="cats" hidden></div>
   <div id="letters"></div>
   <div id="sent"></div>
+  <div id="devices"></div>
 </header>
 <main>
   <p id="info"></p>
@@ -1259,7 +1310,31 @@ function card(g) {
   return c;
 }
 
+// The computers that have reported, one line each: machine, address, when,
+// WiFi, the drive, the versions
+function ago(s) {
+  return s < 60 ? s + " s ago" : s < 3600 ? Math.round(s / 60) + " min ago" : Math.round(s / 3600) + " h ago";
+}
+function showDevices(list) {
+  $("devices").innerHTML = (list || []).map(d => {
+    const fresh = d.ago < Math.max(60, 3 * (parseInt(d.play) || 0));
+    const bits = [
+      '<span class="' + (fresh ? "on" : "off") + '">\u25CF</span> <b>' + esc(d.machine || "?") + "</b> " + esc(d.ip),
+      "seen " + ago(d.ago),
+      d.rssi ? "WiFi " + esc(d.rssi) + " dBm" : "",
+      d.drive ? "in the drive: " + esc(d.drive) : "",
+      d.last && d.last !== d.drive ? "last fetched: " + esc(d.last) : "",
+      parseInt(d.play) ? "asks for games every " + esc(d.play) + " s" : "Play off",
+      "companion " + esc(d.companion || "?") + (d.board ? " (" + esc(d.board) + ")" : ""),
+      d.modem ? "Zimodem " + esc(d.modem) : "",
+      d.uptime ? "up " + esc(d.uptime) + " min" : ""];
+    return "<div>" + bits.filter(x => x).join(" · ") + "</div>";
+  }).join("");
+}
+setInterval(() => fetch("/_/api/state").then(r => r.json()).then(st => { showDevices(st.devices); showSent(st.sent); }).catch(() => {}), 15000);
+
 function apply(st) {
+  showDevices(st.devices);
   favs = new Set(st.favourites);
   document.querySelectorAll(".card").forEach(c => c.paintStar && c.paintStar());
   if (current) $("fav").textContent = favs.has(current.id) ? "\u2605 Favourite" : "\u2606 Add to favourites";
@@ -1296,6 +1371,7 @@ function load(reset) {
     start += d.games.length;
     $("more").hidden = start >= total;
     showSent(d.sent);
+    showDevices(d.devices);
   });
 }
 
@@ -1550,9 +1626,14 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 page_html = CATALOGUE_HTML.replace("__TITLE__", html.escape(TITLE))
                 return self.send_data(page_html.encode("utf-8"), "text/html; charset=utf-8", body)
-        if parts[1:] == ["job"]:
-            # the companion asking for a game to play, see Play
-            data = (play.take() if body else "NONE\n").encode()   # a HEAD takes nothing
+        if parts[1:] == ["job"] or parts[1:] == ["hello"]:
+            # the companion asking for a game to play, see Play, or only
+            # saying what it is; both bring its status, see Devices
+            devices.heard(self.client_address[0], qs)
+            if parts[1:] == ["hello"]:
+                data = b"OK\n"
+            else:
+                data = (play.take() if body else "NONE\n").encode()   # a HEAD takes nothing
             self.send_response(200, "OK")
             self.send_header("Content-Type", "text/plain; charset=utf-8")
             self.send_header("Content-Length", str(len(data)))
@@ -1563,6 +1644,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(data)
             self.close_connection = True
             return
+        if parts[1:] == ["api", "state"]:
+            return self.send_data(json.dumps(state()).encode(), "application/json", body)
         if parts[1:2] == ["api"] and parts[2:3] == ["games"]:
             def num(k, d):
                 try:
