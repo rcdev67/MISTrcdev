@@ -97,6 +97,54 @@ The two ports the board shows when it is plugged in **normally** -- two
 `USB Serial Port` entries of its debugger -- are **not** the one: they are
 for flashing the FPGA, not the BL616.
 
+## Changing the machine, without a PC
+
+System menu (**Shift+F12**), **Change core**: a core file on the USB stick
+-- `c64nano.fs` or `atarist.fs` from `bin\` -- becomes the machine, also
+after switching off, until another one is chosen there. It takes about a
+minute.
+
+What happens:
+
+1. The modem's status display and the OSD say what is about to happen:
+   the screen goes dark for about a minute, do not switch off.
+2. The companion writes the core into the flash through JTAG, below
+   `0x100000`, and reads every 256 byte page back and compares it. TOS and
+   the 1541's ROMs above that are not touched, only looked at: the result
+   says if the new machine's are missing.
+3. It loads the same file into the FPGA, so the new machine runs at once,
+   and restarts itself for the new machine's menu.
+4. The result shows for 30 seconds in the OSD and on the display, and
+   stays on the stick as `CORESW.TXT`, for instance *C64 written (886
+   KB), from now on at every start.*
+
+What it needs:
+
+- **The ROMs of both machines in the flash**, once: the flash scripts of
+  both guides put them there. They stay when the core changes.
+- **An Atari ST core that leaves JTAG free**: from MiSTeryNano `c3bdbb0` on,
+  built here or in a release after 2026-11-05. The ST cores before took
+  the JTAG pins for themselves; with one of them in the flash the change
+  away from the ST cannot start -- flash a newer ST once from the PC.
+- A USB stick formatted FAT32, on the hub.
+
+If something goes wrong: *NOT written: ...* means nothing changed in the
+flash, and the new machine runs until it is switched off. Switched off in
+the middle of writing, the core area is incomplete and the screen stays
+dark at the next start: flash the machine from the PC as in its guide --
+holding S2 is not needed then. The ROMs survive either way.
+
+The companion reaches the flash through the FPGA's JTAG with instruction
+`0x16`, the way openFPGALoader does it for the GW2A, and loads the core
+into the SRAM afterwards: a reload of the FPGA from its flash through JTAG
+does not work on the Tang Nano 20K, not even with Gowin's own programmer.
+*Load Core from USB*, the entry above it in the menu, is the maintainers':
+it loads a core into the FPGA only, until it is switched off -- for trying
+one out.
+
+Tested on a 3921: from the ST to the C64 and back, each kept over a power
+cycle.
+
 ## Bluetooth keyboards and controllers
 
 Bluetooth keyboards, mice and controllers work through a **USB Bluetooth

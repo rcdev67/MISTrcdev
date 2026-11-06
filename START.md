@@ -321,6 +321,15 @@ with your PC's address instead of `192.168.1.20` (`ipconfig` shows it,
 For a whole collection, with pictures in the browser, there is
 [stserve](server/README.md), on the PC or on a NAS.
 
+## 10. Both machines on one board
+
+Flash the C64 and the Atari ST once each, as in step 3: both put their
+ROMs into the flash, and those stay. From then on the machine changes
+without a PC: `c64nano.fs` and `atarist.fs` from `bin\` on the USB stick,
+**Shift+F12**, *Change core*, pick one. About a minute later it runs, and
+stays the machine until the next change. Details in
+[`companion/README.md`](companion/README.md), *Changing the machine*.
+
 ## When something does not work
 
 | What you see | What it is |

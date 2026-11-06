@@ -56,6 +56,7 @@ From a terminal on the machine, or from any other one on the modem:
 | `AT+DISP:1106` | the controller is an SH1106 -- shown when the picture sits two columns off or is noise. Stored |
 | `AT+DISP:1306` | back to SSD1306, the default. Stored |
 | `AT+DISP:OFF`, `AT+DISP:ON` | switch it off and on, stored |
+| `AT+MSG:<title>\|<text>` | a message over the whole screen, for when the machine's own screen is dark -- the companion sends it while it changes the core. `_` for a space, a `\|` starts a new line, `30:` in front shows it 30 seconds instead of five minutes, `AT+MSG:` alone clears it |
 
 The driver and its 5x7 font are our own, in the Zimodem fork
 (`zimodem/zdisplay.ino`, the font drawn in `tools/font5x7/make_font.py`):

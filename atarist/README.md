@@ -93,7 +93,11 @@ The parts in detail, the wiring diagram and the power rules:
    [C64 guide](../c64/README.md), section 3, explains both.
    This core uses the JTAG pins as regular IO, so before **every** step:
    unplug, hold **S2**, plug in, hold two seconds, release. The script asks
-   each time.
+   each time. The ST core from MiSTeryNano `c3bdbb0` on leaves JTAG free,
+   and S2 is no longer needed with it in the flash; holding it does no
+   harm. That core can also be changed to the C64 and back without a PC:
+   [`../companion/README.md`](../companion/README.md), *Changing the
+   machine*.
 4. **Flash the companion**: `..\companion\flash_companion.cmd`. It asks for
    the board revision and finds the port itself, telling you when to unplug
    and how to plug the board in. Not sure about the revision, or what update

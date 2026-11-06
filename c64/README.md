@@ -95,6 +95,11 @@ Gowin's programmer then continues to work with `--cable-index 5`.
 
 Both take the core from `bin\` and the DOS images from `flash\roms\`.
 
+**Both machines on one board:** once the ROMs of both are in the flash, the
+companion changes between the C64 and the Atari ST from a USB stick,
+without a PC -- [`../companion/README.md`](../companion/README.md),
+*Changing the machine*.
+
 **Before every programming run**: unplug the board, **hold S2**, plug it in,
 keep holding for two seconds, release. Without that the FPGA stops answering
 as soon as a core is running that uses the JTAG pins as regular IO.
