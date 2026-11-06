@@ -30,6 +30,12 @@ What is written **here** is the road to a working machine: what actually runs
 on this setup, what we changed and why, and instructions somebody without
 prior knowledge can work through.
 
+**How this differs from the maintainers' C64Nano and MiSTeryNano** -- what is
+better here, and what is worse or a trade-off -- is in
+[`DIFFERENCES.md`](DIFFERENCES.md). In short: one board only, the Tang Nano
+20K, but with a WiFi modem, games from a server in the house, drive sounds,
+Bluetooth, and both machines in the flash at once.
+
 ## Getting started
 
 **New to all of this?** [`START.md`](START.md) goes from an empty Windows PC
@@ -82,6 +88,7 @@ vendors' user interfaces. Then the guide for your machine:
 | [`server/`](server) | **stserve**, the collection on a NAS or PC for both machines' *Download...*: ZIP archives opened on the fly, menus of thirty, and a catalogue in the browser with pictures, favourites and a button that sends a game to the computer |
 | [`sources/`](sources) | the sources, as git submodules of our forks, each pinned to a tested commit |
 | [`START.md`](START.md) | **from an empty PC to the first start**, step by step, for beginners |
+| [`DIFFERENCES.md`](DIFFERENCES.md) | **what differs from upstream**: what is better here, what is worse, what is the same |
 | [`HARDWARE.md`](HARDWARE.md) | the **parts** and the **wiring**: what to buy, every wire on the pin header, power and antenna |
 | [`TOOLS.md`](TOOLS.md) | the tools from outside, with exact versions and where to get them |
 | [`paths.cmd`](paths.cmd) | where the tools are; read by every script |
@@ -94,7 +101,7 @@ The sources under `sources/` are our forks of the maintainers' repositories:
 |---|---|---|---|
 | `sources/C64Nano` | [rcdev67/C64Nano](https://github.com/rcdev67/C64Nano) | `nano20k-running` | `98937de` |
 | `sources/MiSTeryNano` | [rcdev67/MiSTeryNano](https://github.com/rcdev67/MiSTeryNano) | `nano20k-running` | `c3bdbb0` |
-| `sources/FPGA-Companion` | [rcdev67/FPGA-Companion](https://github.com/rcdev67/FPGA-Companion) | `net-download` | `af5b150` |
+| `sources/FPGA-Companion` | [rcdev67/FPGA-Companion](https://github.com/rcdev67/FPGA-Companion) | `net-download` | `280a298` |
 | `sources/Zimodem` | [rcdev67/Zimodem](https://github.com/rcdev67/Zimodem) | `c3-supermini-misterynano` | `fa6deb9` |
 
 In none of those forks is `main` the working branch. **Moving a pin** to a
@@ -127,5 +134,9 @@ its checksum.
 | **C64** | **running since 26 October 2026**: picture, USB hub with keyboard, OSD on F12 without delay, SD card mounted, and the 1541 reading a disk image. Getting there needed one change to the core — see [`COMPANION-CORE-CONTRACT.md`](COMPANION-CORE-CONTRACT.md). Since 27 October: **drive sounds** from real 1541 recordings, a **WiFi modem** for terminal programs and BBSes (the ST's ESP32-S3 with Zimodem, on the same pins), a **German keyboard** layout, and the original Commodore kernal as the standard. Since 3 November: **Bluetooth keyboards and controllers** through a USB Bluetooth adapter on the hub, classic and Low Energy, up to four at once, and **programs from the server**: the companion fetches them through the modem onto the SD card, as on the ST |
 
 Switching platforms is **one** flash write at `0x000000` — the ROMs for both
-machines fit in the flash at the same time. Switching at runtime is
-deliberately **not** a goal.
+machines fit in the flash at the same time. Since 6 November 2026 the
+companion does that write itself: a core on the USB stick, *Change core* in
+its menu, and that machine starts from then on, no PC needed. The same day
+brought stserve's **Play** button, the machine's **SD card in the browser**,
+a line per computer with its state, and **save games** going back to the
+server (`save=on`; not yet tried on a board).
