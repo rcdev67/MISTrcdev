@@ -1161,6 +1161,61 @@ def query_games(q, letter, start, n, fav=False, cat=None):
     out.update(state())
     return out
 
+# One game in full, for its view in the catalogue: the whole description,
+# the file, the disks of its set, the other versions of the same title in
+# the collection, more from its publisher and of its genre, and where to
+# read about it on the web.
+def short(x):
+    return {"id": x.id, "title": x.title, "year": x.year, "marks": x.marks,
+            "publisher": x.publisher, "disks": len(x.set) if x.set else 1}
+
+
+def web_links(g):
+    q = urllib.parse.quote_plus
+    machine = "C64" if "64" in SYSTEM else "Atari ST" if "ST" in SYSTEM else SYSTEM
+    site = "lemon64.com" if machine == "C64" else "atarimania.com" if machine == "Atari ST" else ""
+    links = [("MobyGames", "https://www.mobygames.com/search/?q=" + q(g.title))]
+    if site:
+        links.append((site.split(".")[0].capitalize(),
+                      "https://duckduckgo.com/?q=" + q("site:%s %s" % (site, g.title))))
+    links.append(("YouTube", "https://www.youtube.com/results?search_query=" + q("%s %s" % (g.title, machine))))
+    links.append(("Wikipedia", "https://en.wikipedia.org/w/index.php?search=" + q("%s video game" % g.title)))
+    return [{"label": a, "url": b} for a, b in links]
+
+
+def game_detail(g):
+    games = catalogue.get()
+    first = g.set[0] if g.set else g.id
+    def shown(x):            # a set of disks counts once, as its first
+        return not x.set or x.set[0] == x.id
+
+    def one_per_title(xs, n):
+        seen, out = set(), []
+        for x in xs:
+            if x.key in seen or x.key == g.key:
+                continue
+            seen.add(x.key)
+            out.append(short(x))
+            if len(out) == n:
+                break
+        return out
+
+    versions = [short(x) for x in games if x.key == g.key and shown(x) and x.id != first][:20]
+    pub = norm(g.publisher)
+    by_pub = one_per_title(sorted((x for x in games if pub and shown(x) and norm(x.publisher) == pub),
+                                  key=lambda x: (x.year or "9999", x.key)), 12)
+    by_genre = one_per_title((x for x in games if g.genre and shown(x) and x.genre == g.genre), 12)
+    try:
+        kb = (os.path.getsize(g.real) + 1023) // 1024
+    except OSError:
+        kb = 0
+    out = dict(g.to_json(), desc=g.desc[:20000], file=os.path.basename(g.real), kb=kb)
+    return {"game": out,
+            "disks": [dict(short(d), name=d.name) for d in (catalogue.find(i) for i in g.set or []) if d],
+            "versions": versions, "publisher": by_pub, "genre": by_genre,
+            "links": web_links(g)}
+
+
 # The browser's page, one file, no library: the server is reached on a home
 # network and must work without the internet as well (only the pictures
 # need it).
@@ -1231,12 +1286,24 @@ main { padding:16px; }
         background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:6px; }
 #detail { position:fixed; inset:0; z-index:3; background:rgba(0,0,0,.6); display:none;
           align-items:flex-start; justify-content:center; overflow:auto; padding:24px 16px; }
-#detail .box { background:var(--panel); border-radius:10px; max-width:760px; width:100%; padding:16px; }
+#detail .box { background:var(--panel); border-radius:10px; max-width:900px; width:100%; padding:16px; }
 #detail h2 { margin:0 0 4px; font-size:20px; }
 #detail .facts { color:var(--dim); margin-bottom:12px; }
-#detail .desc { white-space:pre-line; margin:0 0 12px; max-height:240px; overflow:auto; }
+#detail .desc { white-space:pre-line; margin:0 0 12px; line-height:1.45; }
 #detail .pics { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
-#detail .pics img { max-width:calc(50% - 4px); max-height:260px; border-radius:4px; background:#000; }
+#detail .pics img { max-width:calc(50% - 4px); max-height:300px; border-radius:4px; background:#000;
+                    cursor:zoom-in; }
+#detail .sec { margin-top:16px; }
+#detail .sec h3 { margin:0 0 6px; font-size:14px; color:var(--dim); font-weight:600; }
+#detail .sec div { margin:2px 0; }
+#detail .sec small, #detail .chip small { color:var(--dim); }
+#detail .chip { display:inline-block; margin:2px 6px 4px 0; padding:4px 10px; border-radius:14px;
+                background:var(--line); cursor:pointer; font-size:13px; }
+#detail .chip:hover { outline:1px solid var(--accent); }
+#detail .links a { color:var(--accent); margin-right:14px; text-decoration:none; }
+#zoom { position:fixed; inset:0; z-index:4; background:rgba(0,0,0,.9); display:none;
+        align-items:center; justify-content:center; cursor:zoom-out; }
+#zoom img { max-width:96vw; max-height:96vh; image-rendering:pixelated; }
 #detail button { padding:9px 16px; font:inherit; cursor:pointer; border-radius:6px; border:0; }
 #play { background:var(--accent); color:#fff; margin-right:8px; font-weight:600; }
 #send { background:var(--line); color:var(--text); }
@@ -1264,7 +1331,9 @@ main { padding:16px; }
   <p class="desc" id="dd"></p>
   <button id="play">&#9654; Play</button><button id="send">Send to the SD card</button><button id="sendusb">Send to the USB stick</button><button id="fav"></button><button id="close">Close</button>
   <div id="hint"></div>
+  <div id="dx"></div>
 </div></div>
+<div id="zoom"><img alt=""></div>
 <script>
 const $ = id => document.getElementById(id);
 let q = "", letter = "", start = 0, total = 0, timer = null, current = null;
@@ -1388,21 +1457,75 @@ function showCats(list) {
   });
 }
 
-function show(g) {
-  current = g;
-  $("dt").textContent = g.title;
-  $("df").textContent = [line(g), [g.genre, g.players ? g.players + " players" : ""].filter(x => x).join(", "), (g.folder ? g.folder + " · " : "") + "on the card as " + g.name]
-                        .filter(x => x).join("  —  ");
-  $("dd").textContent = g.desc || "";
-  $("dp").innerHTML = "";
-  ["box", "title", "snap", "logo"].forEach(k => {
-    const i = new Image(); i.alt = k; i.onerror = () => i.remove();
-    i.src = "/_/img/" + g.id + "/" + k; $("dp").appendChild(i);
-  });
-  $("hint").textContent = "";
-  $("fav").textContent = favs.has(g.id) ? "\u2605 Favourite" : "\u2606 Add to favourites";
-  $("detail").style.display = "flex";
+// A game's view, by its id: fetched in full, with its own address
+// (#<id>), so a link to it opens it and the browser's back button closes it.
+function chips(list, label) {
+  if (!list || !list.length) return "";
+  return '<div class="sec"><h3>' + esc(label) + '</h3>' + list.map(x =>
+    '<span class="chip" data-id="' + x.id + '">' + esc(x.title) + ' <small>' +
+    esc([x.year, x.marks, x.disks > 1 ? x.disks + " disks" : ""].filter(y => y).join(" · ")) +
+    '</small></span>').join("") + '</div>';
 }
+
+function show(g, tries) {
+  fetch("/_/api/game?id=" + encodeURIComponent(g.id)).then(r => r.ok ? r.json() : null).then(d => {
+    if (!d) {   // the collection is still being read after a start
+      if ((tries || 0) < 10) setTimeout(() => show(g, (tries || 0) + 1), 1500);
+      return;
+    }
+    const x = d.game;
+    current = x;
+    $("dt").textContent = x.title;
+    $("df").textContent = [line(x), [x.genre, x.players ? x.players + " players" : ""].filter(y => y).join(", "),
+                           (x.folder ? x.folder + " · " : "") + "on the card as " + x.name,
+                           x.file + (x.kb ? ", " + x.kb + " KB" : "")]
+                          .filter(y => y).join("  —  ");
+    $("dd").textContent = x.desc || "";
+    $("dp").innerHTML = "";
+    ["box", "title", "snap", "logo"].forEach(k => {
+      const i = new Image(); i.alt = k; i.title = k; i.onerror = () => i.remove();
+      i.onclick = () => { $("zoom").firstChild.src = i.src; $("zoom").style.display = "flex"; };
+      i.src = "/_/img/" + x.id + "/" + k; $("dp").appendChild(i);
+    });
+    let h = "";
+    if (d.disks.length > 1)
+      h += '<div class="sec"><h3>' + d.disks.length + ' disks, sent and played together</h3>' +
+           d.disks.map((k, n) => "<div>" + (n + 1) + ". " + esc(k.name) +
+                       (k.marks ? " <small>" + esc(k.marks) + "</small>" : "") + "</div>").join("") + "</div>";
+    h += chips(d.versions, "Other versions in the collection");
+    if (x.publisher) h += chips(d.publisher, "More from " + x.publisher);
+    if (x.genre) h += chips(d.genre, "More " + x.genre);
+    h += '<div class="sec links"><h3>On the web</h3>' + d.links.map(l =>
+      '<a href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' + esc(l.label) + "</a>").join("") + "</div>";
+    $("dx").innerHTML = h;
+    $("dx").querySelectorAll(".chip").forEach(c => c.onclick = () => show({ id: c.dataset.id }));
+    $("hint").textContent = "";
+    $("fav").textContent = favs.has(x.id) ? "★ Favourite" : "☆ Add to favourites";
+    // opening pushes an entry, so Back closes it; going on to another game
+    // in the view only changes the address
+    // a view opened from a link (the address had its #) has no entry to go
+    // back to and gets none
+    if (!location.hash) history.pushState({ ours: true }, "", "#" + x.id);
+    else history.replaceState(history.state, "", "#" + x.id);
+    $("detail").style.display = "flex";
+    $("detail").scrollTop = 0;
+  });
+}
+
+function hide() {
+  $("zoom").style.display = "none";
+  $("detail").style.display = "none";
+  if (history.state && history.state.ours) history.back();
+  else if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+}
+function fromHash() {
+  const m = /^#([0-9a-f]{12})$/.exec(location.hash);
+  if (m && $("detail").style.display !== "flex") show({ id: m[1] });
+  else if (m) return;
+  else { $("zoom").style.display = "none"; $("detail").style.display = "none"; }
+}
+window.onpopstate = fromHash;
+$("zoom").onclick = () => $("zoom").style.display = "none";
 
 function send(usb) {
   fetch("/_/send?id=" + current.id + (usb ? "&to=usb" : ""), { method: "POST" })
@@ -1428,9 +1551,13 @@ function playHint(st) {
 $("play").onclick = () => fetch("/_/play?id=" + current.id, { method: "POST" })
   .then(r => r.json()).then(st => { apply(st); $("hint").textContent = playHint(st); });
 $("fav").onclick = () => { toggleFav(current); };
-$("close").onclick = () => $("detail").style.display = "none";
-$("detail").onclick = e => { if (e.target === $("detail")) $("detail").style.display = "none"; };
-document.onkeydown = e => { if (e.key === "Escape") $("detail").style.display = "none"; };
+$("close").onclick = hide;
+$("detail").onclick = e => { if (e.target === $("detail")) hide(); };
+document.onkeydown = e => {
+  if (e.key !== "Escape") return;
+  if ($("zoom").style.display === "flex") $("zoom").style.display = "none";
+  else if ($("detail").style.display === "flex") hide();
+};
 $("more").onclick = () => load(false);
 // a new search starts in Games when it finds games there, in all of them otherwise
 $("q").oninput = () => { clearTimeout(timer); timer = setTimeout(() => { q = $("q").value.trim(); cat = null; load(true); }, 250); };
@@ -1448,6 +1575,7 @@ $("q").oninput = () => { clearTimeout(timer); timer = setTimeout(() => { q = $("
   $("letters").appendChild(b);
 });
 load(true);
+fromHash();
 </script></body></html>
 """
 
@@ -1644,6 +1772,11 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(data)
             self.close_connection = True
             return
+        if parts[1:] == ["api", "game"]:
+            g = catalogue.find(qs.get("id", [""])[0])
+            if not g:
+                return self.fail(404, "Not Found")
+            return self.send_data(json.dumps(game_detail(g)).encode(), "application/json", body)
         if parts[1:] == ["api", "state"]:
             return self.send_data(json.dumps(state()).encode(), "application/json", body)
         if parts[1:2] == ["api"] and parts[2:3] == ["games"]:

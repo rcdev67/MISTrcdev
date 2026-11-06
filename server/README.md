@@ -81,6 +81,14 @@ the modem: every game of every folder on one page, with year and publisher
 from its TOSEC name, a search box, a bar of first letters, and pictures --
 screenshot, title screen, box and logo where there are any.
 
+- **A game's view**, a click on its card: all its pictures, each larger
+  on a click, the whole description where a scraper's `gamelist.xml` has
+  one, the file and its size, the disks of a set, the other versions of
+  the same title in the collection (`[a]`, `[cr]`, other publishers), more
+  from its publisher and of its genre -- each a click away -- and searches
+  for it on MobyGames, Lemon64 or Atarimania, YouTube and Wikipedia. The
+  view has an address of its own, `/_/#<id>`, to keep or pass on; the
+  browser's Back closes it.
 - **One category at a time.** A TOSEC set files its disks under Games,
   Applications, Demos, Compilations and more, and the page starts with
   **Games**; the bar above the letters switches to the others, *All* shows
