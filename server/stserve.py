@@ -1483,10 +1483,81 @@ def game_detail(g):
 # The browser's page, one file, no library: the server is reached on a home
 # network and must work without the internet as well (only the pictures
 # need it).
+# The machine the collection is for, from SYSTEM: its colours on the page
+# and its symbol, a drawing of our own of the computer -- the makers' logos
+# are their trademarks and stay out of this file. A logo.png or logo.svg in
+# ST_CACHE is shown instead, for whoever wants their own.
+def platform():
+    s = SYSTEM.lower()
+    return "c64" if "64" in s else "st" if "st" in s.split(" - ")[-1].split() else "other"
+
+
+def _keys(x0, y0, x1, y1, rows, cols, gap, fill):
+    out = []
+    w = (x1 - x0 - gap * (cols - 1)) / cols
+    h = (y1 - y0 - gap * (rows - 1)) / rows
+    for r in range(rows):
+        for c in range(cols):
+            out.append('<rect x="%.2f" y="%.2f" width="%.2f" height="%.2f" rx=".4" fill="%s"/>'
+                       % (x0 + c * (w + gap), y0 + r * (h + gap), w, h, fill))
+    return "".join(out)
+
+
+def platform_icon(kind=None):
+    """An SVG of the machine: the C64 as the bread bin, the ST as its wedge."""
+    kind = kind or platform()
+    if kind == "c64":
+        body = ('<path d="M4 26 L8.5 8.2 Q9 6.5 11 6.5 L53 6.5 Q55 6.5 55.5 8.2 L60 26 Q60.3 28 58 28 '
+                'L6 28 Q3.7 28 4 26 Z" fill="#b5a48c" stroke="#5a4c3c" stroke-width="1"/>'
+                '<path d="M6.2 24.5 L57.8 24.5" stroke="#8f7f69" stroke-width=".8"/>')
+        keys = (_keys(12, 10, 49, 20.4, 4, 13, .7, "#4a3e33")
+                + '<rect x="17" y="21.2" width="25" height="2" rx=".5" fill="#4a3e33"/>'
+                + _keys(51, 10, 54.6, 20.4, 4, 1, .7, "#d8c9ad"))
+        led = '<circle cx="9" cy="26.2" r=".9" fill="#ff4b3a"/>'
+        return '<svg viewBox="0 0 64 32" xmlns="http://www.w3.org/2000/svg">' + body + keys + led + '</svg>'
+    if kind == "st":
+        body = ('<path d="M3 27 L6.5 9 Q7 7 9 7 L55 7 Q57 7 57.5 9 L61 27 Q61.3 29 59 29 L5 29 '
+                'Q2.7 29 3 27 Z" fill="#d6d6cf" stroke="#66665f" stroke-width="1"/>')
+        fkeys = "".join('<polygon points="%.2f,12.2 %.2f,12.2 %.2f,9.6 %.2f,9.6" fill="#8d8d86"/>'
+                        % (9 + i * 3.7, 12 + i * 3.7, 12.9 + i * 3.7, 9.9 + i * 3.7) for i in range(10))
+        keys = (_keys(8, 13.6, 42, 24, 4, 12, .6, "#3c3c38")
+                + '<rect x="13" y="24.8" width="24" height="1.8" rx=".4" fill="#3c3c38"/>'
+                + _keys(44, 13.6, 48.5, 24, 3, 2, .6, "#3c3c38")
+                + _keys(50.5, 13.6, 57, 26.6, 4, 3, .6, "#3c3c38"))
+        return '<svg viewBox="0 0 64 32" xmlns="http://www.w3.org/2000/svg">' + body + fkeys + keys + '</svg>'
+    return ('<svg viewBox="0 0 64 32" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="5" width="48" height="22" '
+            'rx="3" fill="#888" stroke="#444"/><rect x="12" y="9" width="40" height="14" rx="1" fill="#223"/></svg>')
+
+
+def own_logo():
+    """A logo of the user's own in ST_CACHE: its path and type, or None."""
+    for name, ctype in (("logo.svg", "image/svg+xml"), ("logo.png", "image/png")):
+        if CACHE and os.path.isfile(os.path.join(CACHE, name)):
+            return os.path.join(CACHE, name), ctype
+    return None
+
+
+PLATFORM_TAG = {"c64": 'Commodore 64 <span class="ready">READY.</span>', "st": "Atari ST", "other": ""}
+
+
+def catalogue_page():
+    kind = platform()
+    logo = '<img src="/_/logo" alt="">' if own_logo() else platform_icon(kind)
+    fav = "data:image/svg+xml," + urllib.parse.quote(platform_icon(kind))
+    return (CATALOGUE_HTML.replace("__TITLE__", html.escape(TITLE))
+            .replace("__PLATFORM__", kind)
+            .replace("__LOGO__", logo)
+            .replace("__FAVICON__", fav)
+            .replace("__TAG__", PLATFORM_TAG.get(kind, ""))
+            .replace("__ICON_C64__", platform_icon("c64"))
+            .replace("__ICON_ST__", platform_icon("st")))
+
+
 CATALOGUE_HTML = r"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>__TITLE__</title>
+<link rel="icon" href="__FAVICON__">
 <style>
 :root { --bg:#16161d; --panel:#20202a; --line:#33333f; --text:#e8e6e3; --dim:#9a98a8;
         --accent:#7aa2f7; --ok:#9ece6a; }
@@ -1500,6 +1571,7 @@ body { margin:0; background:var(--bg); color:var(--text);
 header { position:sticky; top:0; z-index:2; background:var(--bg);
          border-bottom:1px solid var(--line); padding:12px 16px; }
 h1 { font-size:18px; margin:0 0 8px; }
+.brand h1 small { font-size:14px; }
 h1 small { color:var(--dim); font-weight:normal; }
 #q { width:100%; max-width:420px; padding:8px 10px; font:inherit; color:var(--text);
      background:var(--panel); border:1px solid var(--line); border-radius:6px; }
@@ -1608,9 +1680,73 @@ main { padding:16px; }
 #fav { background:var(--line); color:var(--text); margin-left:8px; }
 #close { background:var(--line); color:var(--text); margin-left:8px; }
 #hint { color:var(--dim); font-size:13px; margin-top:10px; }
-</style></head><body>
+
+/* ---- the machine's own look: its colours, its symbol ---- */
+body.c64 { --bg:#130f33; --panel:#1f1852; --line:#372e88; --text:#d9d5ff; --dim:#9a92dc;
+           --accent:#8b80ff; --ok:#8fd694; --glow:rgba(139,128,255,.35); --hdr1:#2a2170; --hdr2:#130f33; }
+body.st  { --bg:#111512; --panel:#1b211c; --line:#2d3a30; --text:#e4ece5; --dim:#92a395;
+           --accent:#3fbf62; --ok:#9ece6a; --glow:rgba(63,191,98,.3); --hdr1:#1d3324; --hdr2:#111512; }
+body.other { --glow:rgba(122,162,247,.3); --hdr1:#262636; --hdr2:#16161d; }
+@media (prefers-color-scheme: light) {
+  body.c64 { --bg:#efedff; --panel:#ffffff; --line:#d3cdff; --text:#211a5c; --dim:#6b63aa;
+             --accent:#4b3bc4; --glow:rgba(75,59,196,.22); --hdr1:#ddd8ff; --hdr2:#efedff; }
+  body.st  { --bg:#eef4ef; --panel:#ffffff; --line:#cfdbd1; --text:#16231a; --dim:#5d6e60;
+             --accent:#1f8a3c; --glow:rgba(31,138,60,.2); --hdr1:#d5ead9; --hdr2:#eef4ef; }
+  body.other { --glow:rgba(51,85,187,.2); --hdr1:#e6e6ef; --hdr2:#f4f3ef; }
+}
+header { background:linear-gradient(180deg, var(--hdr1), var(--hdr2)); padding:14px 20px 12px;
+         box-shadow:0 2px 14px rgba(0,0,0,.25); border-bottom:1px solid var(--line); }
+.brand { display:flex; align-items:center; gap:14px; margin-bottom:10px; }
+.brand .logo { flex:none; width:84px; height:42px; filter:drop-shadow(0 3px 6px rgba(0,0,0,.35)); }
+.brand .logo svg, .brand .logo img { width:100%; height:100%; object-fit:contain; }
+.brand h1 { margin:0; font-size:22px; letter-spacing:.01em; }
+.brand .tag { font-size:12px; color:var(--dim); letter-spacing:.14em; text-transform:uppercase; margin-top:2px; }
+body.c64 .brand h1, body.c64 .brand .tag { font-family:ui-monospace, "Cascadia Mono", Consolas, monospace;
+                                           text-transform:uppercase; }
+body.c64 .brand .tag .ready { margin-left:12px; color:var(--accent); letter-spacing:.05em; }
+body.c64 .cursor { display:inline-block; width:.6em; height:1em; margin-left:4px; vertical-align:-2px;
+                   background:var(--accent); animation:blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity:0; } }
+body:not(.c64) .cursor { display:none; }
+#q { border-radius:20px; padding:9px 16px; max-width:480px; border-color:var(--line);
+     transition:border-color .15s, box-shadow .15s; }
+#q:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--glow); }
+#letters { gap:4px; }
+#letters button { border-radius:14px; min-width:30px; transition:background .12s, border-color .12s; }
+#letters button:hover { border-color:var(--accent); }
+#cats button:hover { border-color:var(--accent); }
+#devices { display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+#devices > div { margin:0; background:var(--panel); border:1px solid var(--line);
+                 border-left:3px solid var(--accent); border-radius:8px; padding:6px 10px; line-height:1.6; }
+#devices .mini { display:inline-block; width:34px; height:17px; margin-right:6px; vertical-align:-4px; }
+#devices .mini svg { width:100%; height:100%; }
+main { padding:18px 20px; }
+#grid { grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:16px; }
+.card { border-radius:12px; transition:transform .14s ease, box-shadow .14s ease, border-color .14s;
+        box-shadow:0 1px 3px rgba(0,0,0,.25); }
+.card:hover { transform:translateY(-3px); box-shadow:0 10px 24px rgba(0,0,0,.35), 0 0 0 1px var(--accent),
+              0 0 18px var(--glow); border-color:var(--accent); }
+.pic { image-rendering:pixelated; }
+.card .t { padding-top:8px; }
+#detail .box, #card .box, #saves .box { border-top:4px solid var(--accent); border-radius:14px;
+              box-shadow:0 20px 60px rgba(0,0,0,.5); }
+#detail .pics img { border-radius:8px; image-rendering:pixelated; }
+#play { box-shadow:0 4px 14px var(--glow); }
+#detail button, #card button, #saves button, #card label.btn { transition:filter .12s; }
+#detail button:hover, #card button:hover, #saves button:hover, #card label.btn:hover { filter:brightness(1.15); }
+#more { border-radius:20px; padding:9px 26px; }
+#detail .acts { display:flex; flex-wrap:wrap; gap:8px; }
+#detail .acts button { margin:0; }
+#detail .links { display:flex; flex-wrap:wrap; gap:4px 14px; }
+#detail .links h3 { flex-basis:100%; }
+#detail .links a { margin:0; }
+@media (max-width:700px) { header { position:static; } .brand .logo { width:64px; height:32px; } }
+#more:hover { border-color:var(--accent); }
+</style></head><body class="__PLATFORM__">
 <header>
-  <h1>__TITLE__ <small id="count"></small></h1>
+  <div class="brand"><span class="logo">__LOGO__</span>
+    <div><h1>__TITLE__ <small id="count"></small></h1><div class="tag">__TAG__<span class="cursor"></span></div></div>
+  </div>
   <input id="q" type="search" placeholder="Search: title, publisher or year" autocomplete="off">
   <div id="cats" hidden></div>
   <div id="letters"></div>
@@ -1626,7 +1762,7 @@ main { padding:16px; }
   <h2 id="dt"></h2><div class="facts" id="df"></div>
   <div class="pics" id="dp"></div>
   <p class="desc" id="dd"></p>
-  <button id="play">&#9654; Play</button><button id="send">Send to the SD card</button><button id="sendusb">Send to the USB stick</button><button id="fav"></button><button id="close">Close</button>
+  <div class="acts"><button id="play">&#9654; Play</button><button id="send">Send to the SD card</button><button id="sendusb">Send to the USB stick</button><button id="fav"></button><button id="close">Close</button></div>
   <div id="hint"></div>
   <div id="dx"></div>
 </div></div>
@@ -1644,6 +1780,7 @@ main { padding:16px; }
   <table id="cfiles"></table>
 </div></div>
 <script>
+const ICON_C64 = '__ICON_C64__', ICON_ST = '__ICON_ST__';
 const $ = id => document.getElementById(id);
 let q = "", letter = "", start = 0, total = 0, timer = null, current = null;
 let favs = new Set(), onlyFav = false, cat = null;
@@ -1710,7 +1847,8 @@ function showDevices(list) {
       d.save === "x" ? "saves games: the modem needs a newer Zimodem" : "",
       '<a href="#" data-ip="' + esc(d.ip) + '">SD card</a>',
       '<a href="#" data-saves="1">Saves</a>'];
-    return "<div>" + bits.filter(x => x).join(" · ") + "</div>";
+    const icon = /64/.test(d.machine || d.core || "") ? ICON_C64 : /ST|MiSTery/i.test(d.machine || d.core || "") ? ICON_ST : "";
+    return "<div>" + (icon ? '<span class="mini">' + icon + "</span>" : "") + bits.filter(x => x).join(" · ") + "</div>";
   }).join("");
   $("devices").querySelectorAll("a[data-ip]").forEach(a => a.onclick = e => { e.preventDefault(); openCard(a.dataset.ip); });
   $("devices").querySelectorAll("a[data-saves]").forEach(a => a.onclick = e => { e.preventDefault(); openSaves(); });
@@ -2302,8 +2440,13 @@ class Handler(BaseHTTPRequestHandler):
             if not url.path.endswith("/"):
                 parts = []      # fall through to the redirect below
             else:
-                page_html = CATALOGUE_HTML.replace("__TITLE__", html.escape(TITLE))
-                return self.send_data(page_html.encode("utf-8"), "text/html; charset=utf-8", body)
+                return self.send_data(catalogue_page().encode("utf-8"), "text/html; charset=utf-8", body)
+        if parts[1:] == ["logo"]:
+            own = own_logo()
+            if not own:
+                return self.send_data(platform_icon().encode(), "image/svg+xml", body, cache=True)
+            with open(own[0], "rb") as f:
+                return self.send_data(f.read(), own[1], body)
         if parts[1:] == ["card", "put"]:
             # the companion's list and files, a piece a fetch, see Cards.put
             if not body:

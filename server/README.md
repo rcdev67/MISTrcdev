@@ -80,7 +80,12 @@ folder, then **Action → Build** (or `docker compose up -d` in that folder).
 `http://<nas-ip>:8888/_/` shows the collection for a person rather than for
 the modem: every game of every folder on one page, with year and publisher
 from its TOSEC name, a search box, a bar of first letters, and pictures --
-screenshot, title screen, box and logo where there are any.
+screenshot, title screen, box and logo where there are any. The page dresses
+for its machine, from `ST_SYSTEM`: the C64's blues with a `READY.` and its
+cursor, the ST's green, light or dark as the browser is set, and a drawing
+of the computer at the top and as the tab's icon -- our own drawing, not the
+makers' logos, which are their trademarks. Your own `logo.png` or
+`logo.svg` in `ST_CACHE` takes its place.
 
 - **A game's view**, a click on its card: all its pictures, each larger
   on a click, the whole description where a scraper's `gamelist.xml` has
@@ -241,7 +246,7 @@ All of them are optional; the defaults are what the companion can handle.
 | `ST_HIDE` | — | patterns to leave out, e.g. `*[STX]*,*.txt` |
 | `ST_PEEK` | `1` | look into the archives of a page and drop those without a usable image. Turn it off (`0`) for a slow disk |
 | `ST_QUIET` | `0` | `1` stops the line per request in the log |
-| `ST_CACHE` | — | a folder stserve may write to: pictures, sent games, favourites. The compose file mounts `./cache-st` and `./cache-c64` there |
+| `ST_CACHE` | — | a folder stserve may write to: pictures, sent games, favourites. The compose file mounts `./cache-st` and `./cache-c64` there. A `logo.png` or `logo.svg` put there is shown at the top of the catalogue instead of the drawing of the machine |
 | `ST_SYSTEM` | `Atari - ST` | libretro's name of the machine, for the pictures: `Atari - ST`, `Commodore - 64` |
 | `ST_THUMBS` | `https://thumbnails.libretro.com` | where the pictures come from |
 | `ST_TITLE` | `stserve` | the catalogue's heading |
