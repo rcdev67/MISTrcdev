@@ -91,3 +91,34 @@ and `at&w`.
 **The debug output** on that socket, 115200 baud, prints the whole
 configuration at start, **the WiFi password included**. Do not paste it
 anywhere.
+
+## Swapping the modem
+
+The **DevKitC-1U** is the same board as the DevKitC-1 with a socket for an
+external antenna instead of the one on the board. Take it as **N16R8** (16 MB
+flash, 8 MB PSRAM) and it replaces the old one one to one: the same pins, the
+same wires, the same image. A board with less PSRAM does not run this image,
+and without the PSRAM neither a large download nor a whole disk for the
+saves would fit; another board shape has other pins on its header and needs
+the image built for them.
+
+1. **The antenna on before the power.** Its U.FL socket takes only a few
+   plugs and unplugs; screw the antenna to the outside of the case, away
+   from metal, the USB hub and the stick.
+2. **Flash it**: `flash_zimodem.cmd`, as above. The new modem knows no
+   network yet.
+3. **The network**: with a `wifi=Network,Password` line in `atarist.ini` or
+   `c64.ini` the companion hands it over at the next start, the time zone
+   as well -- nothing to do. Without the line: `atw"Network,Password"` and
+   `at&w` from a terminal program, see the guide of your machine (the ST:
+   [`atarist/README.md`](../atarist/README.md), section 6; the C64: CCGMS in
+   [`c64/README.md`](../c64/README.md)).
+4. **Measure** the S3's `3V3` pin with everything running, as in
+   [`HARDWARE.md`](../HARDWARE.md).
+
+The new board has another MAC address, so the router usually gives it
+another IP address. The companion and stserve learn it by themselves; only a
+fixed address set up for the old modem in the router has to move to the new
+MAC. A display set to `AT+DISP:1106` needs that command once more. Bluetooth
+is not affected: keyboards and controllers pair with the adapter on the
+Tang's hub, and the pairings are kept on the SD card.

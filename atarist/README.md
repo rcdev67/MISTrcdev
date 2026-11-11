@@ -252,6 +252,36 @@ its page *Saves*:
 
     save=on
 
+**The modem's WiFi from the ST, without the ini.** The `wifi=` line is the
+easy way: the companion hands the network to the modem at every start, a new
+modem included. Without it -- a card without the line, or a modem flashed
+anew -- the ST sets it up with a terminal program, once:
+
+1. F12, `Serial: Ext. UART`: the ST's serial port goes straight to the modem.
+2. Start a terminal program: **Flash 1.6** works as it is, or the **VT52
+   emulator** accessory from Atari's own system disk (disk in drive A,
+   reset, then `Desk`).
+3. Set it to **19200 baud, 8N1**: in Flash in its settings, for the VT52
+   emulator with the RS232 settings in the `Desk` menu.
+4. Caps Lock off, then type:
+
+       at                          -> OK: the modem is there
+       atw                         lists the networks in range, names exactly as they are
+       atw"MyNetwork,MyPassword"   joins: one pair of quotes, the comma inside
+       ati                         CONNECTED TO MyNetwork (192.168...)
+       at&w                        saves it in the modem
+
+   Everything inside the quotes counts exactly as typed; `"` is Shift+2 on a
+   German keyboard. `ati` answers `ERROR ON MyNetwork` for a few seconds
+   until the modem is in. **Without `at&w` the network is gone after power
+   off.**
+5. F12, `Serial` back to what it was: for downloads, *Play* and the saves the
+   companion switches to `Netz` by itself.
+
+Then put the `wifi=` line into the ini after all, so the next modem needs
+none of this: with the modem online, stserve's page *SD card* opens
+`atarist.ini` in the browser -- add the line, *Save to the card*.
+
 The details, other modem boards and how it works are in
 [DOWNLOAD.md](../sources/FPGA-Companion/DOWNLOAD.md).
 
@@ -323,7 +353,7 @@ runs the plain modem, and pin 54 stays free.
 | The ST starts in colour with a plain desktop although the ini says otherwise, F12 does nothing | the companion is not running: wrong image for the board version, or the board hangs on a computer |
 | `no device found` when flashing the core | S2 was not held while plugging the board in |
 | A game shows garbage or does not start | Video is on Mono: set Color and `Reset`; or the wrong chipset or TOS for it |
-| `Modem has no WiFi` | the `wifi=` line is missing or wrong; the result of the join is in `NETLOG.TXT` on the card |
+| `Modem has no WiFi` | the `wifi=` line is missing or wrong; the result of the join is in `NETLOG.TXT` on the card. Without the line: a terminal program, see section 6 |
 | `No modem on port 1`, `STAT ... bytes 0` in `NETLOG.TXT`, the S3's red LED lit | measure the S3's `3V3` pin with everything running: it must be 3.3 V. Here it was 2.4 V, its reset pin with it, so the S3 never started -- the supply gave 4.3 V under load, enough for the Tang, not for the S3. At least 4.8 V on the rail. A wire from pin 41 to pin 51 instead of the S3 tells the rest: bytes come back there, the Tang side works |
 | `Modem has no WiFi` once the Bluetooth adapter and its devices are in, fine without them | the S3 hangs on the Tang's 3.3 V. Its radio draws 300 to 500 mA when it joins and sends, the Tang's 3.3 V also feeds the FPGA, and with the hub drawing more the join fails. Feed the S3's `5V` pin from the common 5 V rail, with the capacitor at its pins, and nothing on its `3V3` pin -- 5 V there destroys it. Seen on both boards here |
 | Downloads slow, `FETCH ... 2 connections` or more, the clock not set at power-up | a weak WiFi signal: every `FETCH` line in the console gives the S3's `rssi`. From about -70 dBm on it is reliable; at -77 to -80 even a listing needs several tries. Lay the end of the S3 with its antenna clear of the Tang, cables and metal, towards the router, or take the S3 DevKitC-1U with an external antenna. A modem that joins slowly misses the clock at power-up: `clockwait=60` in `atarist.ini` holds the ST back up to a minute for it |
